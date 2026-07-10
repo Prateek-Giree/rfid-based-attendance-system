@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class AuthCoreConfig(AppConfig):
-    name = 'auth_core'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = 'apps.auth_core'

@@ -131,3 +131,12 @@ STATIC_URL = 'static/'
 
 
 AUTH_USER_MODEL = "auth_core.User"
+
+UNFOLD = {
+    "SITE_TITLE": "Smart Attendance System",
+    "SITE_HEADER": "Smart Attendance",
+    "SITE_SUBHEADER": "Administration Panel",
+    "SITE_SYMBOL": "school",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": False,
+}

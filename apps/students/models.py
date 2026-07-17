@@ -63,4 +63,4 @@ class Student(models.Model):
         ordering = ["classroom", "roll_no"]
 
     def __str__(self):
-        return f"{self.roll_no} - {self.name}"
+        return f"{self.roll_no} - {self.first_name} {self.last_name}"

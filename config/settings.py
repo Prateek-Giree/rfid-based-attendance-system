@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.attendance",
     "apps.analytics",
     "apps.auth_core",
+    'apps.devices',
 ]
 
 MIDDLEWARE = [

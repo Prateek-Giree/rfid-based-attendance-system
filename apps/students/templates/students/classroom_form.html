@@ -1,0 +1,74 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+{# ── Page Header ─────────────────────────────────────────────────────── #}
+<div class="mb-6">
+    {% include "partials/components/page_header.html" with header_title=page_title header_subtitle="Fill in classroom details below" header_icon="school" %}
+</div>
+
+{# ── Form Card ───────────────────────────────────────────────────────── #}
+<div class="max-w-2xl card p-6">
+    <form method="POST" action="" class="space-y-6">
+        {% csrf_token %}
+        
+        {# Global Form Errors #}
+        {% if form.non_field_errors %}
+        <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/30 text-danger border border-red-200 dark:border-red-800 text-sm">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {# Classroom Name #}
+        <div>
+            <label for="{{ form.name.id_for_label }}" class="input-label">Classroom Name</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+            <p class="input-error">{% for error in form.name.errors %}{{ error }}{% endfor %}</p>
+            {% endif %}
+            <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                Enter the grade name or major name (e.g., Grade 10, BCA).
+            </p>
+        </div>
+
+        {# Section #}
+        <div>
+            <label for="{{ form.section.id_for_label }}" class="input-label">Section</label>
+            {{ form.section }}
+            {% if form.section.errors %}
+            <p class="input-error">{% for error in form.section.errors %}{{ error }}{% endfor %}</p>
+            {% endif %}
+            <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                Enter the section identifier (e.g., A, B, Morning, Evening).
+            </p>
+        </div>
+
+        {# Class Teacher #}
+        <div>
+            <label for="{{ form.class_teacher.id_for_label }}" class="input-label">Class Teacher</label>
+            {{ form.class_teacher }}
+            {% if form.class_teacher.errors %}
+            <p class="input-error">{% for error in form.class_teacher.errors %}{{ error }}{% endfor %}</p>
+            {% endif %}
+            <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                Assign a teacher to oversee attendance for this classroom (optional).
+            </p>
+        </div>
+
+        {# Buttons #}
+        <div class="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+            <button type="submit" class="btn-primary">
+                <i data-lucide="check" class="h-4 w-4"></i> Save Classroom
+            </button>
+            <a href="{% url 'students:classroom_list' %}" class="btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

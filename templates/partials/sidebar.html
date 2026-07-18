@@ -30,6 +30,14 @@
         {% if is_admin or is_teacher %}
         <div class="my-3 border-t border-slate-700/50"></div>
         <p class="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Academic</p>
+        
+        {# Classrooms — Admin and Teacher #}
+        <a href="{% url 'students:classroom_list' %}"
+           class="{% if 'classrooms' in request.path %}sidebar-link-active{% else %}sidebar-link{% endif %}"
+           aria-current="{% if 'classrooms' in request.path %}page{% endif %}">
+            <i data-lucide="school" class="h-4 w-4 flex-shrink-0"></i>
+            Classrooms
+        </a>
         {% endif %}
 
         {# Students — Admin only #}

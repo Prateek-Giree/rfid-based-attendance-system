@@ -22,4 +22,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Application URLs
     path("", include("apps.auth_core.urls", namespace="auth_core")),
+    path("", include("apps.students.urls", namespace="students")),
 ]

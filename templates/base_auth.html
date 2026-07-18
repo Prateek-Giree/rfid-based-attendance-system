@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block body %}
+{# Authenticated layout: fixed sidebar + topnav + scrollable content area #}
+<div class="flex h-screen overflow-hidden">
+
+    {# ── Fixed Sidebar ──────────────────────────────────────────────────── #}
+    {% include "partials/sidebar.html" %}
+
+    {# ── Main area (topnav + content) ──────────────────────────────────── #}
+    <div class="flex flex-col flex-1 overflow-hidden ml-64">
+
+        {# Top navigation bar #}
+        {% include "partials/topnav.html" %}
+
+        {# Scrollable content area #}
+        <main class="flex-1 overflow-y-auto bg-surface dark:bg-slate-900 p-6">
+            <div class="max-w-7xl mx-auto fade-in">
+
+                {# Breadcrumbs #}
+                {% include "partials/breadcrumbs.html" %}
+
+                {# Page content #}
+                {% block content %}{% endblock %}
+
+            </div>
+        </main>
+    </div>
+
+</div>
+{% endblock %}

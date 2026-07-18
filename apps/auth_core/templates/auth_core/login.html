@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block body_class %}bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex">
+
+    {# ── Left panel: branding (hidden on mobile) ──────────────────────── #}
+    <div class="hidden lg:flex lg:w-1/2 bg-nav flex-col justify-between p-12">
+        {# Logo #}
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="wifi" class="h-5 w-5 text-white"></i>
+            </div>
+            <span class="text-white text-lg font-bold tracking-tight">SAMS</span>
+        </div>
+
+        {# Hero content #}
+        <div>
+            <h2 class="text-3xl font-bold text-white leading-snug">
+                Smart Attendance<br>Management System
+            </h2>
+            <p class="mt-3 text-slate-400 text-sm leading-relaxed max-w-xs">
+                RFID-powered attendance tracking for modern educational institutions.
+                Real-time insights, effortless management.
+            </p>
+
+            {# Feature bullets #}
+            <ul class="mt-8 space-y-3">
+                {% for feature in feature_list %}
+                <li class="flex items-center gap-3 text-sm text-slate-300">
+                    <i data-lucide="check-circle-2" class="h-4 w-4 text-success flex-shrink-0"></i>
+                    {{ feature }}
+                </li>
+                {% empty %}
+                <li class="flex items-center gap-3 text-sm text-slate-300">
+                    <i data-lucide="check-circle-2" class="h-4 w-4 text-success flex-shrink-0"></i>
+                    Automated RFID attendance marking
+                </li>
+                <li class="flex items-center gap-3 text-sm text-slate-300">
+                    <i data-lucide="check-circle-2" class="h-4 w-4 text-success flex-shrink-0"></i>
+                    Role-based access for Admin and Teachers
+                </li>
+                <li class="flex items-center gap-3 text-sm text-slate-300">
+                    <i data-lucide="check-circle-2" class="h-4 w-4 text-success flex-shrink-0"></i>
+                    Real-time analytics and reports
+                </li>
+                <li class="flex items-center gap-3 text-sm text-slate-300">
+                    <i data-lucide="check-circle-2" class="h-4 w-4 text-success flex-shrink-0"></i>
+                    Student portal — no login required
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <p class="text-slate-600 text-xs">© {% now "Y" %} Smart Attendance Management System</p>
+    </div>
+
+    {# ── Right panel: login form ──────────────────────────────────────── #}
+    <div class="flex-1 flex flex-col justify-center items-center px-6 py-12 lg:px-12">
+
+        {# Mobile logo #}
+        <div class="lg:hidden flex items-center gap-2 mb-10">
+            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="wifi" class="h-4 w-4 text-white"></i>
+            </div>
+            <span class="text-slate-800 dark:text-slate-100 text-base font-bold">SAMS</span>
+        </div>
+
+        <div class="w-full max-w-sm">
+
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Welcome back</h1>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to your account to continue</p>
+            </div>
+
+            <form method="POST" action="{% url 'auth_core:login' %}" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    {% for error in form.non_field_errors %}
+                    <p class="text-sm text-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {# Email #}
+                <div class="mb-4">
+                    <label for="{{ form.username.id_for_label }}" class="input-label">
+                        Email Address
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <p class="input-error">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                {# Password #}
+                <div class="mb-6">
+                    <label for="{{ form.password.id_for_label }}" class="input-label">
+                        Password
+                    </label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <p class="input-error">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                {# Submit #}
+                <button type="submit" class="btn-primary w-full justify-center py-2.5">
+                    <i data-lucide="log-in" class="h-4 w-4"></i>
+                    Sign In
+                </button>
+
+            </form>
+
+            {# Footer #}
+            <p class="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                Student? Use the
+                <a href="#" class="text-primary-600 dark:text-primary-400 hover:underline">Student Portal</a>
+                instead.
+            </p>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

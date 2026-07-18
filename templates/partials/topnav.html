@@ -1,0 +1,78 @@
+{# ── Top Navigation Bar ─────────────────────────────────────────────────── #}
+<header class="sticky top-0 z-30 h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex items-center px-6 gap-4">
+
+    {# Left: breadcrumbs area #}
+    <div class="flex-1 min-w-0">
+        {% include "partials/breadcrumbs.html" %}
+    </div>
+
+    {# Right: actions #}
+    <div class="flex items-center gap-2">
+
+        {# Dark mode toggle #}
+        <button id="theme-toggle"
+                class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-150"
+                aria-label="Toggle dark mode"
+                title="Toggle dark mode">
+            <i data-lucide="moon" class="h-4 w-4"></i>
+            <i data-lucide="sun"  class="h-4 w-4 hidden"></i>
+        </button>
+
+        {# Divider #}
+        <div class="h-6 w-px bg-slate-200 dark:bg-slate-600 mx-1"></div>
+
+        {# User menu #}
+        <div class="relative" x-data="{ open: false }">
+            <button id="user-menu-btn"
+                    onclick="document.getElementById('user-dropdown').classList.toggle('hidden')"
+                    class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-150">
+                {# Avatar #}
+                <span class="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-semibold">
+                    {{ request.user.first_name|first|default:request.user.email|first|upper }}
+                </span>
+                <span class="hidden sm:block font-medium truncate max-w-[120px]">
+                    {{ request.user.get_full_name|default:request.user.email }}
+                </span>
+                <i data-lucide="chevron-down" class="h-3.5 w-3.5 text-slate-400 flex-shrink-0"></i>
+            </button>
+
+            {# Dropdown #}
+            <div id="user-dropdown"
+                 class="hidden absolute right-0 mt-1 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50">
+
+                {# User info header #}
+                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                    <p class="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                        {{ request.user.get_full_name|default:"—" }}
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {{ request.user.email }}
+                    </p>
+                    <span class="mt-1.5 inline-block badge-info capitalize">{{ user_role }}</span>
+                </div>
+
+                {# Logout #}
+                <form method="POST" action="{% url 'auth_core:logout' %}" class="px-1 py-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150">
+                        <i data-lucide="log-out" class="h-4 w-4"></i>
+                        Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</header>
+
+{# Close dropdown when clicking outside #}
+<script>
+    document.addEventListener("click", function (e) {
+        var btn = document.getElementById("user-menu-btn");
+        var drop = document.getElementById("user-dropdown");
+        if (drop && btn && !btn.contains(e.target) && !drop.contains(e.target)) {
+            drop.classList.add("hidden");
+        }
+    });
+</script>

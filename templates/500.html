@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}500 — Server Error{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="text-center">
+        <div class="w-20 h-20 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="server-crash" class="h-10 w-10 text-danger"></i>
+        </div>
+        <p class="text-7xl font-bold text-slate-200 dark:text-slate-700 select-none">500</p>
+        <h1 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">Server Error</h1>
+        <p class="mt-2 text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            Something went wrong on our end. Please try again or contact the administrator.
+        </p>
+        <div class="mt-8">
+            <a href="/" class="btn-primary">
+                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                Try Again
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

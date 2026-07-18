@@ -1,0 +1,24 @@
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+        {% if header_icon %}
+        <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="{{ header_icon }}" class="h-5 w-5 text-primary-600 dark:text-primary-400"></i>
+        </div>
+        {% endif %}
+        <div>
+            <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100">{{ header_title }}</h1>
+            {% if header_subtitle %}
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ header_subtitle }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% if action_url and action_label %}
+    <div class="flex-shrink-0">
+        <a href="{{ action_url }}" class="btn-primary">
+            <i data-lucide="plus" class="h-4 w-4"></i>
+            {{ action_label }}
+        </a>
+    </div>
+    {% endif %}
+</div>

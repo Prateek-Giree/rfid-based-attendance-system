@@ -1,0 +1,76 @@
+/* app.css — custom non-Tailwind styles for SAMS
+   Component classes that need @apply are defined via <style type="text/tailwindcss">
+   in base.html. This file covers custom scrollbars, animations, and overrides. */
+
+/* ── Scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #CBD5E1;
+    border-radius: 999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #334155;
+}
+
+/* ── Sidebar scrollable area ──────────────────────────────────── */
+.sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+}
+
+/* ── HTMX loading indicator ───────────────────────────────────── */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-flex;
+}
+.htmx-request.htmx-indicator {
+    display: inline-flex;
+}
+
+/* ── Spinner animation ────────────────────────────────────────── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.spinner {
+    animation: spin 0.75s linear infinite;
+}
+
+/* ── Fade-in for page content ─────────────────────────────────── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* ── SweetAlert2 dark mode overrides ─────────────────────────── */
+.dark .swal2-popup {
+    background-color: #1E293B;
+    color: #F1F5F9;
+    border: 1px solid #334155;
+}
+.dark .swal2-title,
+.dark .swal2-html-container {
+    color: #F1F5F9;
+}
+
+/* ── Table responsive wrapper ─────────────────────────────────── */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Focus ring for sidebar links ─────────────────────────────── */
+.sidebar-link:focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+}

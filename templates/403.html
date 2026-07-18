@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}403 — Forbidden{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="text-center">
+        <div class="w-20 h-20 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="shield-x" class="h-10 w-10 text-warning"></i>
+        </div>
+        <p class="text-7xl font-bold text-slate-200 dark:text-slate-700 select-none">403</p>
+        <h1 class="mt-2 text-2xl font-bold text-slate-800 dark:text-slate-100">Access Forbidden</h1>
+        <p class="mt-2 text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            You do not have permission to access this page. Contact your administrator if you believe this is an error.
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-3">
+            <a href="{% url 'auth_core:dashboard' %}" class="btn-primary">
+                <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
+                Back to Dashboard
+            </a>
+            <a href="{% url 'auth_core:logout' %}" class="btn-secondary">
+                Sign Out
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

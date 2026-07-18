@@ -1,0 +1,44 @@
+
+{% with color=card_color|default:"blue" %}
+<div class="card p-5 flex flex-col gap-3">
+
+    {# Header: title + icon #}
+    <div class="flex items-start justify-between">
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ card_title }}</p>
+        <span class="
+            {% if color == 'blue'  %}bg-blue-50  dark:bg-blue-900/20  text-primary-600 dark:text-blue-400{% endif %}
+            {% if color == 'green' %}bg-emerald-50 dark:bg-emerald-900/20 text-success dark:text-emerald-400{% endif %}
+            {% if color == 'amber' %}bg-amber-50 dark:bg-amber-900/20  text-warning dark:text-amber-400{% endif %}
+            {% if color == 'red'   %}bg-red-50   dark:bg-red-900/20    text-danger  dark:text-red-400{% endif %}
+            p-2 rounded-lg flex-shrink-0">
+            <i data-lucide="{{ card_icon }}" class="h-5 w-5"></i>
+        </span>
+    </div>
+
+    {# Value #}
+    <p class="text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+        {{ card_value|default:"—" }}
+    </p>
+
+    {# Trend #}
+    {% if card_trend %}
+    <div class="flex items-center gap-1.5 text-xs">
+        {% if card_trend_up %}
+            <span class="flex items-center gap-0.5 text-success font-medium">
+                <i data-lucide="trending-up" class="h-3.5 w-3.5"></i>
+                {{ card_trend }}
+            </span>
+        {% else %}
+            <span class="flex items-center gap-0.5 text-danger font-medium">
+                <i data-lucide="trending-down" class="h-3.5 w-3.5"></i>
+                {{ card_trend }}
+            </span>
+        {% endif %}
+        <span class="text-slate-400 dark:text-slate-500">{{ card_trend_label }}</span>
+    </div>
+    {% else %}
+    <p class="text-xs text-slate-400 dark:text-slate-500">No trend data yet</p>
+    {% endif %}
+
+</div>
+{% endwith %}

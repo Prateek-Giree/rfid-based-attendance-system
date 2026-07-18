@@ -1,0 +1,43 @@
+
+{% if messages %}
+<script>
+    (function () {
+        var levelToIcon = {
+            "debug":   "info",
+            "info":    "info",
+            "success": "success",
+            "warning": "warning",
+            "error":   "error",
+        };
+
+        var Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timerProgressBar: true,
+        });
+
+        var msgQueue = [
+            {% for message in messages %}
+            {
+                level: "{{ message.tags|default:'info' }}",
+                text:  "{{ message|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Fire toasts sequentially with a small delay between each
+        msgQueue.forEach(function (msg, index) {
+            setTimeout(function () {
+                var icon  = levelToIcon[msg.level] || "info";
+                var timer = (msg.level === "error") ? 4000 : 3000;
+                Toast.fire({
+                    icon:  icon,
+                    title: msg.text,
+                    timer: timer,
+                });
+            }, index * 400);
+        });
+    })();
+</script>
+{% endif %}

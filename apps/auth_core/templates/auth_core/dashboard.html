@@ -14,7 +14,7 @@
 {# ── Stat Cards ──────────────────────────────────────────────────────── #}
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
 
-    {% include "partials/components/stat_card.html" with card_title="Total Students"  card_value="—"  card_icon="users"  card_color="blue"%}
+    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
 
     {% include "partials/components/stat_card.html" with card_title="Present Today" card_value="—" card_icon="clipboard-check" card_color="green" %}
 
@@ -23,7 +23,7 @@
     {% if is_admin %}
     {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value="—" card_icon="cpu" card_color="blue" %}
     {% else %}
-    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value="—" card_icon="school" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=students_per_classroom|length card_icon="school" card_color="blue" %}
     {% endif %}
 
 </div>
@@ -40,53 +40,73 @@
         {% include "partials/components/empty_state.html" with icon="clipboard-x" title="No Attendance Data" message="Attendance records will appear here once the attendance module is set up." %}
     </div>
 
-    {# Quick Actions / Info #}
-    <div class="card p-6">
-        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Quick Actions</h2>
-        <div class="space-y-2">
+    {# Right Sidebar: Quick Actions & Classroom Distribution #}
+    <div class="flex flex-col gap-6">
+        
+        {# Quick Actions #}
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Quick Actions</h2>
+            <div class="space-y-2">
 
-            {% if is_admin %}
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="user-plus" class="h-4 w-4 text-primary-600 dark:text-primary-400"></i>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Add Student</p>
-                    <p class="text-xs text-slate-400">Coming in Phase 2</p>
-                </div>
-            </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="cpu" class="h-4 w-4 text-success dark:text-emerald-400"></i>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Register Device</p>
-                    <p class="text-xs text-slate-400">Coming in Phase 3</p>
-                </div>
-            </a>
-            {% endif %}
+                {% if is_admin %}
+                <a href="{% url 'students:student_create' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user-plus" class="h-4 w-4 text-primary-600 dark:text-primary-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Add Student</p>
+                        <p class="text-xs text-slate-400">Register a new student</p>
+                    </div>
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="cpu" class="h-4 w-4 text-success dark:text-emerald-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Register Device</p>
+                        <p class="text-xs text-slate-400">Coming in Phase 5</p>
+                    </div>
+                </a>
+                {% endif %}
 
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="clipboard-check" class="h-4 w-4 text-warning dark:text-amber-400"></i>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Mark Attendance</p>
-                    <p class="text-xs text-slate-400">Coming in Phase 4</p>
-                </div>
-            </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="clipboard-check" class="h-4 w-4 text-warning dark:text-amber-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Mark Attendance</p>
+                        <p class="text-xs text-slate-400">Coming in Phase 6</p>
+                    </div>
+                </a>
 
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="file-text" class="h-4 w-4 text-purple-600 dark:text-purple-400"></i>
-                </span>
-                <div>
-                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200">View Reports</p>
-                    <p class="text-xs text-slate-400">Coming in Phase 5</p>
-                </div>
-            </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="file-text" class="h-4 w-4 text-purple-600 dark:text-purple-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">View Reports</p>
+                        <p class="text-xs text-slate-400">Coming in Phase 7</p>
+                    </div>
+                </a>
 
+            </div>
         </div>
+
+        {# Classroom Distribution #}
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Classroom Distribution</h2>
+            <div class="space-y-3">
+                {% for item in students_per_classroom %}
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-600 dark:text-slate-400 font-medium">{{ item.classroom }}</span>
+                    <span class="badge-info">{{ item.student_count }} students</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400 italic">No classrooms assigned or registered.</p>
+                {% endfor %}
+            </div>
+        </div>
+
     </div>
 
 </div>

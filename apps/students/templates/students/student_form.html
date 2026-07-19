@@ -1,0 +1,148 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+{# ── Page Header ─────────────────────────────────────────────────────── #}
+<div class="mb-6">
+    {% include "partials/components/page_header.html" with header_title=page_title header_subtitle="Register or update student details" header_icon="user" %}
+</div>
+
+{# ── Form Card ───────────────────────────────────────────────────────── #}
+<div class="max-w-4xl card p-6">
+    <form method="POST" action="" class="space-y-8">
+        {% csrf_token %}
+        
+        {# Global Form Errors #}
+        {% if form.non_field_errors %}
+        <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/30 text-danger border border-red-200 dark:border-red-800 text-sm">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {# Section 1: Academic & Personal Info #}
+        <div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 pb-2 mb-4">
+                Academic & Personal Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}" class="input-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <p class="input-error">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}" class="input-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <p class="input-error">{% for error in form.last_name.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.classroom.id_for_label }}" class="input-label">Classroom</label>
+                    {{ form.classroom }}
+                    {% if form.classroom.errors %}
+                    <p class="input-error">{% for error in form.classroom.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.roll_no.id_for_label }}" class="input-label">Roll Number</label>
+                    {{ form.roll_no }}
+                    {% if form.roll_no.errors %}
+                    <p class="input-error">{% for error in form.roll_no.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div class="md:col-span-2">
+                    <label for="{{ form.rfid_uid.id_for_label }}" class="input-label">RFID Card UID</label>
+                    {{ form.rfid_uid }}
+                    {% if form.rfid_uid.errors %}
+                    <p class="input-error">{% for error in form.rfid_uid.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                    <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">Scan or manually enter the student's unique RFID hexadecimal card ID.</p>
+                </div>
+            </div>
+        </div>
+
+        {# Section 2: Contact & Address #}
+        <div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 pb-2 mb-4">
+                Contact & Address
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="{{ form.contact.id_for_label }}" class="input-label">Contact Number</label>
+                    {{ form.contact }}
+                    {% if form.contact.errors %}
+                    <p class="input-error">{% for error in form.contact.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div class="md:col-span-2">
+                    <label for="{{ form.address.id_for_label }}" class="input-label">Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <p class="input-error">{% for error in form.address.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Section 3: Guardian Details #}
+        <div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 pb-2 mb-4">
+                Guardian Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ form.guardian_name.id_for_label }}" class="input-label">Guardian Full Name</label>
+                    {{ form.guardian_name }}
+                    {% if form.guardian_name.errors %}
+                    <p class="input-error">{% for error in form.guardian_name.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.guardian_contact.id_for_label }}" class="input-label">Guardian Contact Number</label>
+                    {{ form.guardian_contact }}
+                    {% if form.guardian_contact.errors %}
+                    <p class="input-error">{% for error in form.guardian_contact.errors %}{{ error }}{% endfor %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Section 4: System Options #}
+        <div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 pb-2 mb-4">
+                System Configurations
+            </h3>
+            <div class="flex items-center gap-3">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Active Student Profile
+                </label>
+                {% if form.is_active.errors %}
+                <p class="input-error">{% for error in form.is_active.errors %}{{ error }}{% endfor %}</p>
+                {% endif %}
+            </div>
+            <p class="mt-1 text-xs text-slate-400 dark:text-slate-500 pl-7">
+                Inactive students will not be scanned or included in default attendance calculations.
+            </p>
+        </div>
+
+        {# Buttons #}
+        <div class="flex items-center gap-3 pt-6 border-t border-slate-200 dark:border-slate-700/50">
+            <button type="submit" class="btn-primary">
+                <i data-lucide="check" class="h-4 w-4"></i> Save Student Record
+            </button>
+            <a href="{% url 'students:student_list' %}" class="btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

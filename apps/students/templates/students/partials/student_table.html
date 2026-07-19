@@ -1,0 +1,172 @@
+<table class="table-base">
+    <thead>
+        <tr>
+            <th class="table-header">Roll No.</th>
+            <th class="table-header">Name</th>
+            <th class="table-header">Classroom</th>
+            <th class="table-header">RFID UID</th>
+            <th class="table-header">Status</th>
+            <th class="table-header text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+        {% for student in students %}
+        <tr class="table-row">
+            <td class="table-cell font-semibold text-slate-900 dark:text-white">
+                {{ student.roll_no }}
+            </td>
+            <td class="table-cell font-medium">
+                {{ student.first_name }} {{ student.last_name }}
+            </td>
+            <td class="table-cell">
+                <a href="{% url 'students:classroom_detail' student.classroom.pk %}" class="text-primary hover:underline font-medium">
+                    {{ student.classroom }}
+                </a>
+            </td>
+            <td class="table-cell font-mono text-xs text-slate-500 dark:text-slate-400">
+                {{ student.rfid_uid }}
+            </td>
+            <td class="table-cell">
+                {% if student.is_active %}
+                <span class="badge-success">Active</span>
+                {% else %}
+                <span class="badge-danger">Inactive</span>
+                {% endif %}
+            </td>
+            <td class="table-cell text-right">
+                <div class="inline-flex items-center justify-end gap-3 w-full">
+                    <a href="{% url 'students:student_detail' student.pk %}"
+                       class="text-primary-600 hover:text-primary-900 flex items-center gap-1 text-xs font-medium"
+                       title="View student profile">
+                        <i data-lucide="eye" class="h-3.5 w-3.5"></i> View
+                    </a>
+                    
+                    {% if is_admin %}
+                    <a href="{% url 'students:student_update' student.pk %}"
+                       class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 text-xs font-medium"
+                       title="Edit student">
+                        <i data-lucide="edit" class="h-3.5 w-3.5"></i> Edit
+                    </a>
+                    
+                    <button type="button"
+                            class="text-danger hover:text-red-700 flex items-center gap-1 text-xs font-medium cursor-pointer"
+                            onclick="confirmDelete('{% url 'students:student_delete' student.pk %}', '{{ student.first_name }} {{ student.last_name }}')">
+                        <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete
+                    </button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="px-6 py-12">
+                {% include "partials/components/empty_state.html" with icon="users" title="No Students Found" message="No student records matched your query or filters. Add a new student or modify filters." %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{# ── Pagination ───────────────────────────────────────────────────────── #}
+{% if is_paginated %}
+<div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 px-4 py-4 sm:px-6 mt-4">
+    <div class="flex flex-1 justify-between sm:hidden">
+        {% if page_obj.has_previous %}
+        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                hx-target="#student-table-container"
+                hx-indicator="#search-indicator"
+                class="relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+            Previous
+        </button>
+        {% else %}
+        <span class="opacity-50 relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            Previous
+        </span>
+        {% endif %}
+        
+        {% if page_obj.has_next %}
+        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                hx-target="#student-table-container"
+                hx-indicator="#search-indicator"
+                class="relative ml-3 inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+            Next
+        </button>
+        {% else %}
+        <span class="opacity-50 relative ml-3 inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            Next
+        </span>
+        {% endif %}
+    </div>
+    
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-slate-700 dark:text-slate-300">
+                Showing
+                <span class="font-medium">{{ page_obj.start_index }}</span>
+                to
+                <span class="font-medium">{{ page_obj.end_index }}</span>
+                of
+                <span class="font-medium">{{ paginator.count }}</span>
+                results
+            </p>
+        </div>
+        
+        <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                {# Previous Button #}
+                {% if page_obj.has_previous %}
+                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                        hx-target="#student-table-container"
+                        hx-indicator="#search-indicator"
+                        class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Previous</span>
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+
+                {# Page Numbers #}
+                {% for page_num in paginator.page_range %}
+                    {% if page_obj.number == page_num %}
+                    <span class="relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                        {{ page_num }}
+                    </span>
+                    {% elif page_num > page_obj.number|add:"-3" and page_num < page_obj.number|add:"3" %}
+                    <button hx-get="{% url 'students:student_list' %}?page={{ page_num }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                            hx-target="#student-table-container"
+                            hx-indicator="#search-indicator"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                        {{ page_num }}
+                    </button>
+                    {% endif %}
+                {% endfor %}
+
+                {# Next Button #}
+                {% if page_obj.has_next %}
+                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                        hx-target="#student-table-container"
+                        hx-indicator="#search-indicator"
+                        class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Next</span>
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Re-initialize Lucide Icons #}
+<script>
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>

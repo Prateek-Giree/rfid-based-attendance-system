@@ -6,10 +6,12 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.core.mixins import AdminRequiredMixin, TeacherRequiredMixin
-from .forms import ClassroomForm
-from .models import Classroom
-from .services import ClassroomService
+from .forms import ClassroomForm, StudentForm
+from .models import Classroom, Student
+from .services import ClassroomService, StudentService
 
+
+# ── CLASSROOM VIEWS ───────────────────────────────────────────────────────────
 
 class ClassroomListView(TeacherRequiredMixin, ListView):
     """
@@ -181,4 +183,195 @@ class ClassroomDeleteView(AdminRequiredMixin, DeleteView):
             messages.success(request, f"Classroom '{self.object}' deleted successfully.")
         except ValidationError as e:
             messages.error(request, e.message)
+        return HttpResponseRedirect(self.get_success_url())
+
+
+# ── STUDENT VIEWS ─────────────────────────────────────────────────────────────
+
+class StudentListView(TeacherRequiredMixin, ListView):
+    """
+    Renders list of students.
+    - Admins see all students.
+    - Teachers see only students belonging to their assigned classroom(s).
+    - Supports live searching & classroom filtering via HTMX.
+    """
+    model = Student
+    paginate_by = 10
+    context_object_name = "students"
+
+    def get_template_names(self):
+        if self.request.headers.get("HX-Request") == "true":
+            return ["students/partials/student_table.html"]
+        return ["students/student_list.html"]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            queryset = Student.objects.all()
+        elif hasattr(user, "teacher_profile"):
+            queryset = Student.objects.filter(classroom__class_teacher=user.teacher_profile)
+        else:
+            queryset = Student.objects.none()
+
+        # Prevent N+1 queries by pre-fetching related classroom objects
+        queryset = queryset.select_related("classroom")
+
+        q = self.request.GET.get("q", "").strip()
+        classroom_id = self.request.GET.get("classroom", "")
+
+        queryset = StudentService.search_students(queryset, q)
+        queryset = StudentService.filter_students(queryset, classroom_id)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Populate classroom filter options based on user role
+        if user.is_staff:
+            context["classrooms"] = Classroom.objects.all()
+        elif hasattr(user, "teacher_profile"):
+            context["classrooms"] = Classroom.objects.filter(class_teacher=user.teacher_profile)
+        else:
+            context["classrooms"] = Classroom.objects.none()
+
+        context["page_title"] = "Students"
+        context["breadcrumbs"] = [
+            {"label": "Dashboard", "url": reverse_lazy("auth_core:dashboard")},
+            {"label": "Students", "url": None},
+        ]
+        context["q"] = self.request.GET.get("q", "").strip()
+        context["selected_classroom"] = self.request.GET.get("classroom", "")
+        return context
+
+
+class StudentDetailView(TeacherRequiredMixin, DetailView):
+    """
+    Renders detailed profile of a student.
+    - Admins see any student profile.
+    - Teachers see only students in their assigned classroom(s).
+    """
+    model = Student
+    context_object_name = "student"
+    template_name = "students/student_detail.html"
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        user = self.request.user
+        if user.is_staff:
+            return obj
+        
+        if hasattr(user, "teacher_profile") and obj.classroom.class_teacher == user.teacher_profile:
+            return obj
+            
+        raise PermissionDenied("You do not have permission to view this student's profile.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["breadcrumbs"] = [
+            {"label": "Dashboard", "url": reverse_lazy("auth_core:dashboard")},
+            {"label": "Students", "url": reverse_lazy("students:student_list")},
+            {"label": f"{self.object.first_name} {self.object.last_name}", "url": None},
+        ]
+        return context
+
+
+class StudentCreateView(AdminRequiredMixin, CreateView):
+    """
+    Handles student registration.
+    - Admin only.
+    """
+    model = Student
+    form_class = StudentForm
+    template_name = "students/student_form.html"
+    success_url = reverse_lazy("students:student_list")
+
+    def form_valid(self, form):
+        try:
+            self.object = StudentService.create_student(
+                roll_no=form.cleaned_data["roll_no"],
+                first_name=form.cleaned_data["first_name"],
+                last_name=form.cleaned_data["last_name"],
+                classroom=form.cleaned_data["classroom"],
+                rfid_uid=form.cleaned_data["rfid_uid"],
+                guardian_name=form.cleaned_data["guardian_name"],
+                address=form.cleaned_data["address"],
+                contact=form.cleaned_data["contact"],
+                guardian_contact=form.cleaned_data["guardian_contact"],
+                is_active=form.cleaned_data["is_active"],
+            )
+            messages.success(self.request, f"Student '{self.object}' registered successfully.")
+            return HttpResponseRedirect(self.get_success_url())
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Register Student"
+        context["breadcrumbs"] = [
+            {"label": "Dashboard", "url": reverse_lazy("auth_core:dashboard")},
+            {"label": "Students", "url": reverse_lazy("students:student_list")},
+            {"label": "Register", "url": None},
+        ]
+        return context
+
+
+class StudentUpdateView(AdminRequiredMixin, UpdateView):
+    """
+    Handles student details updates.
+    - Admin only.
+    """
+    model = Student
+    form_class = StudentForm
+    template_name = "students/student_form.html"
+    success_url = reverse_lazy("students:student_list")
+
+    def form_valid(self, form):
+        try:
+            self.object = StudentService.update_student(
+                student=self.get_object(),
+                roll_no=form.cleaned_data["roll_no"],
+                first_name=form.cleaned_data["first_name"],
+                last_name=form.cleaned_data["last_name"],
+                classroom=form.cleaned_data["classroom"],
+                rfid_uid=form.cleaned_data["rfid_uid"],
+                guardian_name=form.cleaned_data["guardian_name"],
+                address=form.cleaned_data["address"],
+                contact=form.cleaned_data["contact"],
+                guardian_contact=form.cleaned_data["guardian_contact"],
+                is_active=form.cleaned_data["is_active"],
+            )
+            messages.success(self.request, f"Student '{self.object}' updated successfully.")
+            return HttpResponseRedirect(self.get_success_url())
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Edit Student"
+        context["breadcrumbs"] = [
+            {"label": "Dashboard", "url": reverse_lazy("auth_core:dashboard")},
+            {"label": "Students", "url": reverse_lazy("students:student_list")},
+            {"label": "Edit", "url": None},
+        ]
+        return context
+
+
+class StudentDeleteView(AdminRequiredMixin, DeleteView):
+    """
+    Deactivates student profile (soft-delete).
+    - Admin only.
+    """
+    model = Student
+    success_url = reverse_lazy("students:student_list")
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            StudentService.delete_student(self.object)
+            messages.success(request, f"Student '{self.object}' soft-deleted (marked inactive) successfully.")
+        except Exception as e:
+            messages.error(request, str(e))
         return HttpResponseRedirect(self.get_success_url())

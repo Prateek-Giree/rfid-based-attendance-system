@@ -1,0 +1,76 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Students{% endblock %}
+
+{% block content %}
+
+{# ── Page Header ─────────────────────────────────────────────────────── #}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title="Student Management" header_subtitle="Manage registered students and their RFID identification UIDs" header_icon="users" %}
+    
+    {% if is_admin %}
+    <div>
+        <a href="{% url 'students:student_create' %}" class="btn-primary">
+            <i data-lucide="user-plus" class="h-4 w-4"></i> Register Student
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{# ── Filter Toolbar Card ─────────────────────────────────────────────── #}
+<div class="card p-6">
+    
+    {# ── Search & Filter Controls ── #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        
+        {# Search Input #}
+        <div class="sm:col-span-2 relative w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            </span>
+            <input type="text"
+                   name="q"
+                   value="{{ q|default:'' }}"
+                   placeholder="Search by roll number, name, or RFID UID..."
+                   class="input-field pl-10"
+                   hx-get="{% url 'students:student_list' %}"
+                   hx-trigger="keyup changed delay:300ms, search"
+                   hx-target="#student-table-container"
+                   hx-include="[name='classroom']"
+                   hx-indicator="#search-indicator">
+            <span id="search-indicator" class="htmx-indicator absolute inset-y-0 right-0 pr-3 flex items-center">
+                <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </span>
+        </div>
+
+        {# Classroom Filter Dropdown #}
+        <div>
+            <select name="classroom"
+                    class="input-field cursor-pointer"
+                    hx-get="{% url 'students:student_list' %}"
+                    hx-trigger="change"
+                    hx-target="#student-table-container"
+                    hx-include="[name='q']"
+                    hx-indicator="#search-indicator">
+                <option value="">All Classrooms</option>
+                {% for classroom in classrooms %}
+                <option value="{{ classroom.pk }}" {% if selected_classroom == classroom.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ classroom }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+    </div>
+
+    {# ── Table Container ── #}
+    <div id="student-table-container" class="overflow-x-auto">
+        {% include "students/partials/student_table.html" %}
+    </div>
+
+</div>
+
+{% endblock %}

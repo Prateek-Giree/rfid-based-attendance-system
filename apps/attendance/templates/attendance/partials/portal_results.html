@@ -1,0 +1,95 @@
+{% if error %}
+<div class="card p-6 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800 flex items-start gap-4">
+    <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+    </div>
+    <div>
+        <h3 class="text-sm font-semibold text-red-800 dark:text-red-400">Lookup Failed</h3>
+        <p class="text-sm text-red-600 dark:text-red-300 mt-1">{{ error }}</p>
+    </div>
+</div>
+{% else %}
+<div class="card p-6 md:p-8 shadow-xl mb-6">
+    <!-- Student Header -->
+    <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-200 dark:border-slate-700/50">
+        <div class="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-primary-700 dark:text-primary-300 text-2xl font-bold">
+            {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+        </div>
+        <div class="text-center sm:text-left">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ student.first_name }} {{ student.last_name }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 flex items-center justify-center sm:justify-start gap-2 mt-1">
+                <i data-lucide="graduation-cap" class="w-4 h-4"></i> {{ student.classroom.name }} {{ student.classroom.section }}
+                <span class="text-slate-300 dark:text-slate-600">&bull;</span>
+                <span class="font-mono">Roll: {{ student.roll_no }}</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Attendance Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-b border-slate-200 dark:border-slate-700/50">
+        <div class="text-center">
+            <p class="text-3xl font-bold text-slate-700 dark:text-slate-200">{{ total_days }}</p>
+            <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Total Days</p>
+        </div>
+        <div class="text-center">
+            <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ present_count }}</p>
+            <p class="text-xs text-emerald-600/70 font-medium uppercase tracking-wider mt-1">Present</p>
+        </div>
+        <div class="text-center">
+            <p class="text-3xl font-bold text-amber-500 dark:text-amber-400">{{ late_count }}</p>
+            <p class="text-xs text-amber-500/70 font-medium uppercase tracking-wider mt-1">Late</p>
+        </div>
+        <div class="text-center flex flex-col justify-center">
+            <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <path class="text-slate-100 dark:text-slate-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"/>
+                    <path class="{% if attendance_percentage >= 75 %}text-emerald-500{% elif attendance_percentage >= 50 %}text-amber-500{% else %}text-red-500{% endif %}" stroke-dasharray="{{ attendance_percentage }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"/>
+                </svg>
+                <span class="absolute text-sm font-bold text-slate-700 dark:text-slate-200">{{ attendance_percentage }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent History -->
+    <div class="pt-6">
+        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Recent Attendance (Last 30 records)</h3>
+        
+        {% if records %}
+        <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+            <table class="table-base">
+                <thead>
+                    <tr>
+                        <th class="table-header">Date</th>
+                        <th class="table-header">Status</th>
+                        <th class="table-header text-right">Recorded At</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    {% for record in records %}
+                    <tr class="table-row">
+                        <td class="table-cell font-medium text-slate-700 dark:text-slate-200">{{ record.date|date:"M d, Y" }}</td>
+                        <td class="table-cell">
+                            {% if record.status == "present" %}
+                            <span class="badge-success">Present</span>
+                            {% elif record.status == "late" %}
+                            <span class="badge-warning">Late</span>
+                            {% else %}
+                            <span class="badge-danger">{{ record.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cell text-xs text-slate-400 text-right">{{ record.timestamp|date:"H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-500 italic text-center py-4">No recent attendance records found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>

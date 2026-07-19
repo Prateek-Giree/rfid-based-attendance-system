@@ -173,14 +173,23 @@ class StudentService:
         Filtered by teacher's assigned classroom(s) if user is a teacher.
         """
         if user.is_staff:
+            from django.utils import timezone
+            import datetime
+            
+            today = timezone.localdate()
+            start_of_month = today.replace(day=1)
+            
             students_qs = Student.objects.all()
             classrooms_qs = Classroom.objects.all()
+            students_added_this_month = Student.objects.filter(created_at__date__gte=start_of_month).count()
         elif hasattr(user, "teacher_profile"):
             students_qs = Student.objects.filter(classroom__class_teacher=user.teacher_profile)
             classrooms_qs = Classroom.objects.filter(class_teacher=user.teacher_profile)
+            students_added_this_month = 0
         else:
             students_qs = Student.objects.none()
             classrooms_qs = Classroom.objects.none()
+            students_added_this_month = 0
 
         total_students = students_qs.count()
         active_students = students_qs.filter(is_active=True).count()
@@ -200,5 +209,6 @@ class StudentService:
         return {
             "total_students": total_students,
             "active_students": active_students,
+            "students_added_this_month": students_added_this_month,
             "students_per_classroom": students_per_classroom,
         }

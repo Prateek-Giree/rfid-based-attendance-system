@@ -1,0 +1,126 @@
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <!-- Trend Chart -->
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="trending-up" class="h-4 w-4 text-primary"></i> Attendance Trend (Last {{ trend_data.labels|length }} days)
+        </h2>
+        <div class="h-64 relative">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Present vs Absent Chart -->
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="pie-chart" class="h-4 w-4 text-primary"></i> Present vs Absent
+        </h2>
+        <div class="h-64 relative">
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{% if is_admin or is_teacher %}
+<!-- Classroom Comparison Chart -->
+<div class="card p-6 mt-6">
+    <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+        <i data-lucide="bar-chart-2" class="h-4 w-4 text-primary"></i> Classroom Attendance Rate
+    </h2>
+    <div class="h-64 relative">
+        <canvas id="comparisonChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    // Destroy existing charts to prevent rendering over them on HTMX swaps
+    if (window.trendChartInst) window.trendChartInst.destroy();
+    if (window.distChartInst) window.distChartInst.destroy();
+    if (window.compChartInst) window.compChartInst.destroy();
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569' }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569' },
+                grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' }
+            },
+            y: {
+                ticks: { color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569' },
+                grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' }
+            }
+        }
+    };
+
+    // Trend Chart
+    const ctxTrend = document.getElementById('trendChart');
+    if (ctxTrend) {
+        window.trendChartInst = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: {{ trend_data.labels|safe }},
+                datasets: [{
+                    label: 'Present Students',
+                    data: {{ trend_data.data|safe }},
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // Distribution Chart
+    const ctxDist = document.getElementById('distributionChart');
+    if (ctxDist) {
+        const distOptions = { ...commonOptions, scales: {} }; // No scales for pie chart
+        window.distChartInst = new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: {{ distribution_data.labels|safe }},
+                datasets: [{
+                    data: {{ distribution_data.data|safe }},
+                    backgroundColor: {{ distribution_data.colors|safe }},
+                    borderWidth: 0
+                }]
+            },
+            options: distOptions
+        });
+    }
+
+    // Comparison Chart
+    {% if is_admin or is_teacher %}
+    const ctxComp = document.getElementById('comparisonChart');
+    if (ctxComp) {
+        window.compChartInst = new Chart(ctxComp, {
+            type: 'bar',
+            data: {
+                labels: {{ comparison_data.labels|safe }},
+                datasets: [{
+                    label: 'Attendance Rate (%)',
+                    data: {{ comparison_data.data|safe }},
+                    backgroundColor: '#6366f1',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    y: { ...commonOptions.scales.y, max: 100 }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>

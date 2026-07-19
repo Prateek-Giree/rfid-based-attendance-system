@@ -1,0 +1,191 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Mark Attendance{% endblock %}
+
+{% block content %}
+
+{% include "partials/components/page_header.html" with header_title="Mark Attendance" header_subtitle="Select a classroom and date, then set each student's status" header_icon="clipboard-check" %}
+
+<div class="mt-6 space-y-6">
+
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="h-4 w-4 text-primary"></i> Select Classroom & Date
+        </h2>
+
+        <form method="GET" class="flex flex-col sm:flex-row gap-4 items-end">
+            <div class="flex-1">
+                <label class="field-label">Classroom</label>
+                {{ form.classroom }}
+                {% if form.classroom.errors %}
+                <p class="input-error mt-1">{{ form.classroom.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                <label class="field-label">Date</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                <p class="input-error mt-1">{{ form.date.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <button type="submit" class="btn-primary w-full sm:w-auto">
+                    <i data-lucide="search" class="h-4 w-4"></i> Load Students
+                </button>
+            </div>
+        </form>
+
+        {% if form.non_field_errors %}
+        <div class="mt-4 p-3 bg-red-50 border border-red-200 text-danger text-sm rounded-lg">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if roster is not None %}
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <i data-lucide="users" class="h-4 w-4 text-primary"></i>
+                {{ classroom }} &mdash; {{ date|date:"M d, Y" }}
+            </h2>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="setAll('present')" class="text-xs btn-secondary py-1 px-3">All Present</button>
+                <button type="button" onclick="setAll('late')" class="text-xs btn-secondary py-1 px-3">All Late</button>
+                <button type="button" onclick="setAll('absent')" class="text-xs btn-secondary py-1 px-3">All Absent</button>
+            </div>
+        </div>
+
+        {% if roster %}
+        <form method="POST" id="mark-attendance-form">
+            {% csrf_token %}
+            <input type="hidden" name="classroom" value="{{ classroom.pk }}">
+            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+
+            <div class="overflow-x-auto">
+                <table class="table-base">
+                    <thead>
+                        <tr>
+                            <th class="table-header">Roll No</th>
+                            <th class="table-header">Student Name</th>
+                            <th class="table-header text-center">Present</th>
+                            <th class="table-header text-center">Late</th>
+                            <th class="table-header text-center">Absent</th>
+                            <th class="table-header">Current Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                        {% for entry in roster %}
+                        <tr class="table-row" id="row-{{ entry.student.pk }}">
+                            <td class="table-cell font-mono text-sm text-slate-600 dark:text-slate-400">{{ entry.student.roll_no }}</td>
+                            <td class="table-cell">
+                                <span class="font-medium text-slate-900 dark:text-white">
+                                    {{ entry.student.first_name }} {{ entry.student.last_name }}
+                                </span>
+                            </td>
+                            <td class="table-cell text-center">
+                                <input type="radio"
+                                       name="student_{{ entry.student.pk }}"
+                                       value="present"
+                                       {% if entry.status == "present" %}checked{% endif %}
+                                       class="radio-present h-4 w-4 text-green-600 border-slate-300 focus:ring-green-500 cursor-pointer"
+                                       onchange="updateRowHighlight({{ entry.student.pk }}, 'present')">
+                            </td>
+                            <td class="table-cell text-center">
+                                <input type="radio"
+                                       name="student_{{ entry.student.pk }}"
+                                       value="late"
+                                       {% if entry.status == "late" %}checked{% endif %}
+                                       class="radio-late h-4 w-4 text-amber-500 border-slate-300 focus:ring-amber-500 cursor-pointer"
+                                       onchange="updateRowHighlight({{ entry.student.pk }}, 'late')">
+                            </td>
+                            <td class="table-cell text-center">
+                                <input type="radio"
+                                       name="student_{{ entry.student.pk }}"
+                                       value="absent"
+                                       {% if entry.status == "absent" %}checked{% endif %}
+                                       class="radio-absent h-4 w-4 text-red-500 border-slate-300 focus:ring-red-500 cursor-pointer"
+                                       onchange="updateRowHighlight({{ entry.student.pk }}, 'absent')">
+                            </td>
+                            <td class="table-cell">
+                                {% if entry.status == "present" %}
+                                <span class="badge-success" id="badge-{{ entry.student.pk }}">Present</span>
+                                {% elif entry.status == "late" %}
+                                <span class="badge-warning" id="badge-{{ entry.student.pk }}">Late</span>
+                                {% else %}
+                                <span class="badge-danger" id="badge-{{ entry.student.pk }}">Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50">
+                <a href="{% url 'attendance:attendance_list' %}" class="btn-secondary">Cancel</a>
+                <button type="button" class="btn-primary" onclick="confirmSubmit()">
+                    <i data-lucide="save" class="h-4 w-4"></i> Save Attendance
+                </button>
+            </div>
+        </form>
+
+        {% else %}
+        {% include "partials/components/empty_state.html" with icon="users" title="No Active Students" message="This classroom has no active students registered." %}
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function updateRowHighlight(studentId, status) {
+        const row = document.getElementById('row-' + studentId);
+        const badge = document.getElementById('badge-' + studentId);
+        row.classList.remove('bg-green-50', 'dark:bg-green-900/10', 'bg-amber-50', 'dark:bg-amber-900/10', 'bg-red-50', 'dark:bg-red-900/10');
+        if (status === 'present') {
+            row.classList.add('bg-green-50', 'dark:bg-green-900/10');
+            badge.className = 'badge-success';
+            badge.textContent = 'Present';
+        } else if (status === 'late') {
+            row.classList.add('bg-amber-50', 'dark:bg-amber-900/10');
+            badge.className = 'badge-warning';
+            badge.textContent = 'Late';
+        } else {
+            row.classList.add('bg-red-50', 'dark:bg-red-900/10');
+            badge.className = 'badge-danger';
+            badge.textContent = 'Absent';
+        }
+    }
+
+    function setAll(status) {
+        document.querySelectorAll(`input[value="${status}"]`).forEach(radio => {
+            radio.checked = true;
+            const name = radio.getAttribute('name');
+            const studentId = name.replace('student_', '');
+            updateRowHighlight(parseInt(studentId), status);
+        });
+    }
+
+    function confirmSubmit() {
+        Swal.fire({
+            title: 'Save Attendance?',
+            text: 'This will save or update attendance for all students listed.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0e1a3a',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, Save',
+            cancelButtonText: 'Cancel',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('mark-attendance-form').submit();
+            }
+        });
+    }
+
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+
+{% endblock %}

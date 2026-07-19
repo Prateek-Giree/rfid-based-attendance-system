@@ -1,0 +1,168 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ student.first_name }} {{ student.last_name }} — Attendance History{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title=page_title header_subtitle="Full attendance history for this student" header_icon="clipboard-check" %}
+
+    <div class="flex items-center gap-2">
+        <a href="{% url 'students:student_detail' student.pk %}" class="btn-secondary">
+            <i data-lucide="user" class="h-4 w-4"></i> Student Profile
+        </a>
+        <a href="{% url 'attendance:attendance_list' %}" class="btn-secondary">
+            Back to List
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="lg:col-span-1 flex flex-col gap-6">
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="user" class="h-4 w-4 text-primary"></i> Student Info
+            </h2>
+            <div class="space-y-3">
+                <div>
+                    <span class="text-xs text-slate-400 block">Full Name</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ student.first_name }} {{ student.last_name }}</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Roll No</span>
+                    <span class="text-sm font-mono font-medium text-slate-700 dark:text-slate-200">{{ student.roll_no }}</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Classroom</span>
+                    <a href="{% url 'students:classroom_detail' student.classroom.pk %}" class="text-sm font-medium text-primary hover:underline">
+                        {{ student.classroom }}
+                    </a>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">RFID UID</span>
+                    <span class="text-sm font-mono text-slate-600 dark:text-slate-400">{{ student.rfid_uid }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="h-4 w-4 text-emerald-500"></i> Attendance Summary
+            </h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">Total Days Recorded</span>
+                    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ total_days }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">Present</span>
+                    <span class="badge-success">{{ present_count }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">Late</span>
+                    <span class="badge-warning">{{ late_count }}</span>
+                </div>
+                <div class="border-t border-slate-200 dark:border-slate-700/50 pt-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Attendance Rate</span>
+                        <span class="text-lg font-bold {% if attendance_percentage >= 75 %}text-success{% elif attendance_percentage >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ attendance_percentage }}%
+                        </span>
+                    </div>
+                    <div class="mt-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+                        <div class="h-2 rounded-full {% if attendance_percentage >= 75 %}bg-emerald-500{% elif attendance_percentage >= 50 %}bg-amber-400{% else %}bg-red-500{% endif %}"
+                             style="width: {{ attendance_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="list" class="h-4 w-4 text-indigo-500"></i> Attendance Records
+        </h2>
+
+        {% if records %}
+        <div class="overflow-x-auto">
+            <table class="table-base">
+                <thead>
+                    <tr>
+                        <th class="table-header">Date</th>
+                        <th class="table-header">Status</th>
+                        <th class="table-header">Recorded At</th>
+                        {% if is_admin %}
+                        <th class="table-header text-right">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    {% for record in records %}
+                    <tr class="table-row">
+                        <td class="table-cell font-medium text-slate-700 dark:text-slate-200">{{ record.date|date:"M d, Y" }}</td>
+                        <td class="table-cell">
+                            {% if record.status == "present" %}
+                            <span class="badge-success">Present</span>
+                            {% elif record.status == "late" %}
+                            <span class="badge-warning">Late</span>
+                            {% else %}
+                            <span class="badge-danger">{{ record.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cell text-xs text-slate-400">{{ record.timestamp|date:"M d, Y H:i" }}</td>
+                        {% if is_admin %}
+                        <td class="table-cell text-right">
+                            <button type="button"
+                                    class="text-danger hover:text-red-700 flex items-center gap-1 text-xs font-medium cursor-pointer ml-auto"
+                                    onclick="confirmDelete('{% url 'attendance:attendance_delete' record.pk %}', '{{ record.date|date:'M d, Y' }}')">
+                                <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete
+                            </button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        {% include "partials/components/empty_state.html" with icon="clipboard-x" title="No Records Yet" message="No attendance has been recorded for this student." action_url=attendance_mark_url action_label="Mark Attendance" %}
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    function confirmDelete(url, date) {
+        Swal.fire({
+            title: 'Delete Record?',
+            html: `<p class="text-sm text-slate-600">Delete the attendance record for <strong>${date}</strong>?</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrf) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrfmiddlewaretoken';
+                    input.value = csrf.value;
+                    form.appendChild(input);
+                }
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+
+{% endblock %}

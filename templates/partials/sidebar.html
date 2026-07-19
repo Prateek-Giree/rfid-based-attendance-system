@@ -62,9 +62,9 @@
 
         {# Attendance — Admin and Teacher #}
         {% if is_admin or is_teacher %}
-        <a href="#"
-           class="sidebar-link opacity-50 cursor-not-allowed"
-           title="Coming in Phase 4">
+        <a href="{% url 'attendance:attendance_list' %}"
+           class="{% if 'attendance' in request.path %}sidebar-link-active{% else %}sidebar-link{% endif %}"
+           aria-current="{% if 'attendance' in request.path %}page{% endif %}">
             <i data-lucide="clipboard-check" class="h-4 w-4 flex-shrink-0"></i>
             Attendance
         </a>
@@ -98,9 +98,9 @@
 
         {# Reports — Admin and Teacher #}
         {% if is_admin or is_teacher %}
-        <a href="#"
-           class="sidebar-link opacity-50 cursor-not-allowed"
-           title="Coming in Phase 5">
+        <a href="{% url 'attendance:report' %}"
+           class="{% if 'reports' in request.path %}sidebar-link-active{% else %}sidebar-link{% endif %}"
+           aria-current="{% if 'reports' in request.path %}page{% endif %}">
             <i data-lucide="file-text" class="h-4 w-4 flex-shrink-0"></i>
             Reports
         </a>

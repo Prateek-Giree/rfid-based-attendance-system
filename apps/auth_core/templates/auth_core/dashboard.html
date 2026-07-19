@@ -15,13 +15,13 @@
     {% if is_admin %}
     {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
     {% include "partials/components/stat_card.html" with card_title="Total Teachers" card_value=total_teachers card_icon="graduation-cap" card_color="green" card_trend=active_teachers card_trend_up=True card_trend_label="Active Teachers" %}
-    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="amber" %}
+    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="amber" card_trend=today_present card_trend_up=True card_trend_label="Present Today" %}
     {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value=active_devices card_icon="cpu" card_color="blue" card_trend=total_devices card_trend_up=True card_trend_label="Registered Devices" %}
     {% else %}
     {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
     {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=my_classrooms_count card_icon="school" card_color="green" %}
     {% include "partials/components/stat_card.html" with card_title="My Students" card_value=my_students_count card_icon="users" card_color="amber" %}
-    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="blue" card_trend=today_present card_trend_up=True card_trend_label="Present Today" %}
     {% endif %}
 
 </div>
@@ -30,10 +30,23 @@
 
     <div class="lg:col-span-2 card p-6">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Recent Attendance</h2>
-            <span class="badge-info">Coming in Phase 6</span>
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Attendance Overview — Today</h2>
+            <a href="{% url 'attendance:attendance_list' %}" class="text-xs text-primary-600 hover:underline">View All</a>
         </div>
-        {% include "partials/components/empty_state.html" with icon="clipboard-x" title="No Attendance Data" message="Attendance records will appear here once the attendance module is set up." %}
+        <div class="grid grid-cols-3 gap-4 mb-2">
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-center">
+                <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ today_present }}</p>
+                <p class="text-xs text-slate-500 mt-1">Present</p>
+            </div>
+            <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-center">
+                <p class="text-2xl font-bold text-amber-500 dark:text-amber-400">{{ today_late }}</p>
+                <p class="text-xs text-slate-500 mt-1">Late</p>
+            </div>
+            <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl text-center">
+                <p class="text-2xl font-bold text-red-500 dark:text-red-400">{{ today_absent }}</p>
+                <p class="text-xs text-slate-500 mt-1">Absent</p>
+            </div>
+        </div>
     </div>
 
     <div class="flex flex-col gap-6">
@@ -74,23 +87,23 @@
                 </a>
                 {% endif %}
 
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                <a href="{% url 'attendance:attendance_mark' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                     <span class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="clipboard-check" class="h-4 w-4 text-warning dark:text-amber-400"></i>
                     </span>
                     <div>
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Mark Attendance</p>
-                        <p class="text-xs text-slate-400">Coming in Phase 6</p>
+                        <p class="text-xs text-slate-400">Select classroom &amp; date</p>
                     </div>
                 </a>
 
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                <a href="{% url 'attendance:report' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                     <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="file-text" class="h-4 w-4 text-purple-600 dark:text-purple-400"></i>
                     </span>
                     <div>
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-200">View Reports</p>
-                        <p class="text-xs text-slate-400">Coming in Phase 7</p>
+                        <p class="text-xs text-slate-400">Analyze attendance data</p>
                     </div>
                 </a>
 
@@ -113,6 +126,39 @@
 
     </div>
 
+<div class="mt-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Attendance Analytics</h2>
+        <form class="flex items-center gap-3" 
+              hx-get="{% url 'auth_core:dashboard_charts' %}" 
+              hx-target="#charts-container" 
+              hx-trigger="change">
+            
+            <select name="days" class="input-field py-1 px-2 text-xs w-auto">
+                <option value="7">Last 7 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="30">Last 30 Days</option>
+            </select>
+
+            <input type="date" name="date" class="input-field py-1 px-2 text-xs w-auto" value="{% now 'Y-m-d' %}">
+
+            {% if is_admin %}
+            <select name="classroom" class="input-field py-1 px-2 text-xs w-auto">
+                <option value="">All Classrooms</option>
+                {% for item in students_per_classroom %}
+                <option value="{{ item.classroom.id }}">{{ item.classroom }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </form>
+    </div>
+
+    <div id="charts-container" hx-get="{% url 'auth_core:dashboard_charts' %}" hx-trigger="load">
+        <div class="p-12 text-center text-slate-500">
+            <i data-lucide="loader-2" class="h-6 w-6 animate-spin mx-auto mb-2 text-primary"></i>
+            <p class="text-xs">Loading analytics...</p>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

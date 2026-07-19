@@ -1,0 +1,107 @@
+<div class="overflow-x-auto">
+    <table class="table-base w-full">
+        <thead>
+            <tr>
+                <th class="table-header">Date</th>
+                <th class="table-header">Student Name</th>
+                <th class="table-header">Roll No</th>
+                <th class="table-header">Classroom</th>
+                <th class="table-header">Status</th>
+                <th class="table-header">Source</th>
+                <th class="table-header">Recorded At</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {% for record in records %}
+            <tr class="table-row">
+                <td class="table-cell font-medium">{{ record.date|date:"Y-m-d" }}</td>
+                <td class="table-cell">{{ record.student.first_name }} {{ record.student.last_name }}</td>
+                <td class="table-cell font-mono">{{ record.student.roll_no }}</td>
+                <td class="table-cell">{{ record.student.classroom.name }} {{ record.student.classroom.section }}</td>
+                <td class="table-cell">
+                    {% if record.status == "present" %}
+                    <span class="badge-success">Present</span>
+                    {% elif record.status == "late" %}
+                    <span class="badge-warning">Late</span>
+                    {% else %}
+                    <span class="badge-danger">{{ record.status|capfirst }}</span>
+                    {% endif %}
+                </td>
+                <td class="table-cell">
+                    {% if record.is_rfid %}
+                    <span class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                        <i data-lucide="scan-line" class="h-3 w-3"></i> RFID
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <i data-lucide="user-check" class="h-3 w-3"></i> Manual
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="table-cell text-xs text-slate-400">{{ record.timestamp|date:"H:i:s" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-12">
+                    {% include "partials/components/empty_state.html" with icon="file-search" title="No Data Found" message="No attendance records match your current filters." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 px-4 py-4 sm:px-6">
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-slate-700 dark:text-slate-300">
+                Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
+            </p>
+        </div>
+        <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                {% if page_obj.has_previous %}
+                <button hx-get="{% url 'attendance:report' %}?page={{ page_obj.previous_page_number }}&start_date={{ selected_start_date }}&end_date={{ selected_end_date }}&classroom={{ selected_classroom }}&source={{ selected_source }}"
+                        hx-target="#report-table-container"
+                        class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+
+                {% for page_num in paginator.page_range %}
+                    {% if page_obj.number == page_num %}
+                    <span class="relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white">{{ page_num }}</span>
+                    {% elif page_num > page_obj.number|add:"-3" and page_num < page_obj.number|add:"3" %}
+                    <button hx-get="{% url 'attendance:report' %}?page={{ page_num }}&start_date={{ selected_start_date }}&end_date={{ selected_end_date }}&classroom={{ selected_classroom }}&source={{ selected_source }}"
+                            hx-target="#report-table-container"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                        {{ page_num }}
+                    </button>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <button hx-get="{% url 'attendance:report' %}?page={{ page_obj.next_page_number }}&start_date={{ selected_start_date }}&end_date={{ selected_end_date }}&classroom={{ selected_classroom }}&source={{ selected_source }}"
+                        hx-target="#report-table-container"
+                        class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>

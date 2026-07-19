@@ -1,0 +1,47 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title="Attendance" header_subtitle="View and manage student attendance records" header_icon="clipboard-check" %}
+
+    {% if is_admin or is_teacher %}
+    <a href="{% url 'attendance:attendance_mark' %}" class="btn-primary">
+        <i data-lucide="plus" class="h-4 w-4"></i> Mark Attendance
+    </a>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    {% include "partials/components/stat_card.html" with card_title="Present Today" card_value=today_present card_icon="user-check" card_color="green" %}
+    {% include "partials/components/stat_card.html" with card_title="Late Today" card_value=today_late card_icon="clock" card_color="amber" %}
+    {% include "partials/components/stat_card.html" with card_title="Absent Today" card_value=today_absent card_icon="user-x" card_color="red" %}
+</div>
+
+<div class="card p-6">
+
+    <form id="attendance-filter-form" method="GET" class="flex flex-col sm:flex-row gap-3 mb-6">
+        <div class="flex-1">
+            <label class="field-label">Classroom</label>
+            {{ filter_form.classroom }}
+        </div>
+        <div class="flex-1">
+            <label class="field-label">Date</label>
+            {{ filter_form.date }}
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="btn-secondary w-full sm:w-auto">
+                <i data-lucide="filter" class="h-4 w-4"></i> Filter
+            </button>
+        </div>
+    </form>
+
+    <div id="attendance-table-container" class="overflow-x-auto">
+        {% include "attendance/partials/attendance_table.html" %}
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Attendance Reports{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title="Attendance Reports" header_subtitle="Generate and export attendance data" header_icon="file-text" %}
+    
+    <button type="button" class="btn-primary" onclick="exportReport()">
+        <i data-lucide="download" class="h-4 w-4"></i> Export to CSV
+    </button>
+</div>
+
+<div class="card p-6 mb-6">
+    <form id="report-filter-form" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"
+          hx-get="{% url 'attendance:report' %}" 
+          hx-target="#report-table-container" 
+          hx-trigger="change">
+        
+        <div>
+            <label class="field-label">Start Date</label>
+            <input type="date" name="start_date" id="start_date" class="input-field" value="{{ selected_start_date }}">
+        </div>
+        <div>
+            <label class="field-label">End Date</label>
+            <input type="date" name="end_date" id="end_date" class="input-field" value="{{ selected_end_date }}">
+        </div>
+        <div>
+            <label class="field-label">Classroom</label>
+            <select name="classroom" id="classroom" class="input-field">
+                <option value="">All Classrooms</option>
+                {% for c in classrooms %}
+                <option value="{{ c.id }}" {% if selected_classroom == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }} {{ c.section }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="field-label">Source</label>
+            <select name="source" id="source" class="input-field">
+                <option value="">All Sources</option>
+                <option value="rfid" {% if selected_source == "rfid" %}selected{% endif %}>RFID</option>
+                <option value="manual" {% if selected_source == "manual" %}selected{% endif %}>Manual</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-secondary w-full justify-center">
+                <i data-lucide="filter" class="h-4 w-4"></i> Filter
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card p-0 overflow-hidden" id="report-table-container">
+    {% include "attendance/partials/report_table.html" %}
+</div>
+
+<script>
+    function exportReport() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        const classroom = document.getElementById('classroom').value;
+        const source = document.getElementById('source').value;
+        
+        const params = new URLSearchParams({
+            start_date: startDate,
+            end_date: endDate,
+            classroom: classroom,
+            source: source
+        });
+        
+        window.location.href = "{% url 'attendance:report_export' %}?" + params.toString();
+    }
+</script>
+{% endblock %}

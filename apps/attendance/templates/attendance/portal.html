@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Student Portal{% endblock %}
+
+{% block body_class %}bg-slate-50 dark:bg-slate-900 min-h-screen flex flex-col{% endblock %}
+
+{% block body %}
+<div class="flex-grow flex flex-col items-center justify-center p-4">
+    
+    <div class="w-full max-w-3xl">
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-600 text-white shadow-lg shadow-primary-500/30 mb-6">
+                <i data-lucide="scan-line" class="w-8 h-8"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Student Portal</h1>
+            <p class="text-slate-500 dark:text-slate-400">Scan your RFID card or enter your UID to check attendance</p>
+        </div>
+
+        <div class="card p-6 md:p-8 shadow-xl mb-8">
+            <form hx-get="{% url 'attendance:portal_lookup' %}" hx-target="#portal-results" hx-indicator="#loading-indicator" class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-grow relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="credit-card" class="h-5 w-5 text-slate-400"></i>
+                    </div>
+                    <input type="text" name="uid" id="uid-input" 
+                           class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                           placeholder="Enter RFID UID..." required autofocus autocomplete="off">
+                </div>
+                <button type="submit" class="btn-primary py-3 px-6 shadow-md whitespace-nowrap justify-center">
+                    <i data-lucide="search" class="w-5 h-5"></i> Lookup
+                </button>
+            </form>
+        </div>
+
+        <div id="loading-indicator" class="htmx-indicator flex flex-col items-center justify-center p-12 opacity-0 transition-opacity duration-300">
+            <i data-lucide="loader-2" class="h-8 w-8 animate-spin text-primary-600 mb-4"></i>
+            <p class="text-slate-500 font-medium">Searching records...</p>
+        </div>
+
+        <div id="portal-results">
+            <!-- Results will be loaded here -->
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Keep focus on input for barcode scanners
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('form') && !e.target.closest('a')) {
+            document.getElementById('uid-input').focus();
+        }
+    });
+</script>
+{% endblock %}

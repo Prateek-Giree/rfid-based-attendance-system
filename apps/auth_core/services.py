@@ -114,12 +114,21 @@ class TeacherService:
         from apps.students.models import Classroom, Student
 
         if user.is_staff:
+            from django.utils import timezone
+            import datetime
+            
+            today = timezone.localdate()
+            start_of_month = today.replace(day=1)
+            
             teachers_qs = Teacher.objects.all()
             total_teachers = teachers_qs.count()
             active_teachers = teachers_qs.filter(user__is_active=True).count()
+            teachers_added_this_month = teachers_qs.filter(created_at__date__gte=start_of_month).count()
+            
             return {
                 "total_teachers": total_teachers,
                 "active_teachers": active_teachers,
+                "teachers_added_this_month": teachers_added_this_month,
             }
 
         if hasattr(user, "teacher_profile"):
@@ -136,6 +145,7 @@ class TeacherService:
         return {
             "total_teachers": 0,
             "active_teachers": 0,
+            "teachers_added_this_month": 0,
             "my_classrooms_count": 0,
             "my_students_count": 0,
         }

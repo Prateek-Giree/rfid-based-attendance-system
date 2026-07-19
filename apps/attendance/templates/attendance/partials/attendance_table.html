@@ -1,0 +1,154 @@
+<table class="table-base">
+    <thead>
+        <tr>
+            <th class="table-header">Student</th>
+            <th class="table-header">Roll No</th>
+            <th class="table-header">Classroom</th>
+            <th class="table-header">Date</th>
+            <th class="table-header">Status</th>
+            <th class="table-header">Marked At</th>
+            <th class="table-header text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+        {% for record in records %}
+        <tr class="table-row">
+            <td class="table-cell">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                        <span class="text-primary-700 dark:text-primary-300 text-xs font-bold">
+                            {{ record.student.first_name|first|upper }}{{ record.student.last_name|first|upper }}
+                        </span>
+                    </div>
+                    <div>
+                        <a href="{% url 'students:student_detail' record.student.pk %}" class="font-medium text-slate-900 dark:text-white hover:text-primary-600">
+                            {{ record.student.first_name }} {{ record.student.last_name }}
+                        </a>
+                        <p class="text-xs text-slate-400">
+                            <a href="{% url 'attendance:student_history' record.student.pk %}" class="hover:text-primary-500">View History</a>
+                        </p>
+                    </div>
+                </div>
+            </td>
+            <td class="table-cell font-mono text-sm text-slate-600 dark:text-slate-400">{{ record.student.roll_no }}</td>
+            <td class="table-cell text-slate-600 dark:text-slate-300">
+                <a href="{% url 'students:classroom_detail' record.student.classroom.pk %}" class="hover:text-primary-600 font-medium">
+                    {{ record.student.classroom }}
+                </a>
+            </td>
+            <td class="table-cell text-slate-600 dark:text-slate-300 text-sm">{{ record.date|date:"M d, Y" }}</td>
+            <td class="table-cell">
+                {% if record.status == "present" %}
+                <span class="badge-success">Present</span>
+                {% elif record.status == "late" %}
+                <span class="badge-warning">Late</span>
+                {% else %}
+                <span class="badge-danger">{{ record.status|capfirst }}</span>
+                {% endif %}
+            </td>
+            <td class="table-cell text-xs text-slate-400">{{ record.timestamp|date:"H:i" }}</td>
+            <td class="table-cell text-right">
+                {% if is_admin %}
+                <button type="button"
+                        class="text-danger hover:text-red-700 flex items-center gap-1 text-xs font-medium cursor-pointer ml-auto"
+                        onclick="confirmDeleteRecord('{% url 'attendance:attendance_delete' record.pk %}', '{{ record.student.first_name|escapejs }} {{ record.student.last_name|escapejs }}', '{{ record.date|date:"M d, Y" }}')">
+                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete
+                </button>
+                {% else %}
+                <span class="text-xs text-slate-400 italic">—</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="px-6 py-12">
+                {% include "partials/components/empty_state.html" with icon="clipboard-x" title="No Attendance Records" message="No attendance records match your current filters. Try adjusting the classroom or date." %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 px-4 py-4 sm:px-6 mt-4">
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-slate-700 dark:text-slate-300">
+                Showing <span class="font-medium">{{ page_obj.start_index }}</span> to <span class="font-medium">{{ page_obj.end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
+            </p>
+        </div>
+        <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                {% if page_obj.has_previous %}
+                <button hx-get="{% url 'attendance:attendance_list' %}?page={{ page_obj.previous_page_number }}&classroom={{ selected_classroom }}&date={{ selected_date }}"
+                        hx-target="#attendance-table-container"
+                        class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+
+                {% for page_num in paginator.page_range %}
+                    {% if page_obj.number == page_num %}
+                    <span class="relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white">{{ page_num }}</span>
+                    {% elif page_num > page_obj.number|add:"-3" and page_num < page_obj.number|add:"3" %}
+                    <button hx-get="{% url 'attendance:attendance_list' %}?page={{ page_num }}&classroom={{ selected_classroom }}&date={{ selected_date }}"
+                            hx-target="#attendance-table-container"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                        {{ page_num }}
+                    </button>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <button hx-get="{% url 'attendance:attendance_list' %}?page={{ page_obj.next_page_number }}&classroom={{ selected_classroom }}&date={{ selected_date }}"
+                        hx-target="#attendance-table-container"
+                        class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+    function confirmDeleteRecord(url, studentName, date) {
+        Swal.fire({
+            title: 'Delete Record?',
+            html: `<p class="text-sm text-slate-600">Delete attendance record for <strong>${studentName}</strong> on <strong>${date}</strong>?</p><p class="text-xs text-slate-400 mt-1">This action cannot be undone.</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrf) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrfmiddlewaretoken';
+                    input.value = csrf.value;
+                    form.appendChild(input);
+                }
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+</script>

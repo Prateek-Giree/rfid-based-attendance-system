@@ -65,14 +65,52 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         from apps.students.services import StudentService
         from apps.auth_core.services import TeacherService
         from apps.attendance.services.device_service import DeviceService
+        from apps.attendance.services.attendance_service import AttendanceService
 
         student_stats = StudentService.get_student_stats(self.request.user)
         teacher_stats = TeacherService.get_teacher_stats(self.request.user)
         device_stats = DeviceService.get_device_stats(self.request.user)
+        attendance_stats = AttendanceService.get_attendance_stats(self.request.user)
 
         context.update(student_stats)
         context.update(teacher_stats)
         context.update(device_stats)
+        context.update(attendance_stats)
 
         return context
 
+
+class DashboardChartsView(LoginRequiredMixin, TemplateView):
+    """
+    Returns HTMX partial for dashboard charts (Chart.js).
+    """
+    template_name = "auth_core/partials/dashboard_charts.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.attendance.services.analytics_service import AnalyticsService
+        
+        days = int(self.request.GET.get("days", 7))
+        classroom_id = self.request.GET.get("classroom", "")
+        
+        try:
+            date_str = self.request.GET.get("date", "")
+            if date_str:
+                import datetime
+                date = datetime.date.fromisoformat(date_str)
+            else:
+                date = None
+        except ValueError:
+            date = None
+
+        context["trend_data"] = AnalyticsService.get_attendance_trend_data(
+            self.request.user, days=days, classroom_id=classroom_id
+        )
+        context["distribution_data"] = AnalyticsService.get_present_vs_absent_data(
+            self.request.user, date=date, classroom_id=classroom_id
+        )
+        context["comparison_data"] = AnalyticsService.get_classroom_comparison_data(
+            self.request.user, date=date
+        )
+        
+        return context

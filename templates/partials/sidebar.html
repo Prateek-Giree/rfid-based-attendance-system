@@ -86,11 +86,9 @@
         </a>
         {% endif %}
 
-        {# Analytics — Admin and Teacher #}
         {% if is_admin or is_teacher %}
-        <a href="#"
-           class="sidebar-link opacity-50 cursor-not-allowed"
-           title="Coming in Phase 5">
+        <a href="{% url 'auth_core:dashboard' %}#charts-container"
+           class="{% if 'dashboard' in request.path and 'charts' in request.GET.urlencode %}sidebar-link-active{% else %}sidebar-link{% endif %}">
             <i data-lucide="bar-chart-3" class="h-4 w-4 flex-shrink-0"></i>
             Analytics
         </a>

@@ -196,12 +196,13 @@ class StudentService:
 
         classrooms_data = classrooms_qs.annotate(
             student_count=models.Count("students")
-        ).values("name", "section", "student_count")
+        ).values("id", "name", "section", "student_count")
 
         students_per_classroom = [
             {
                 "classroom": f"{c['name']} - {c['section']}",
-                "student_count": c["student_count"]
+                "classroom_id": c["id"],
+                "student_count": c["student_count"],
             }
             for c in classrooms_data
         ]

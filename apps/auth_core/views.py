@@ -83,23 +83,23 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 class DashboardChartsView(LoginRequiredMixin, TemplateView):
     """
     Returns HTMX partial for dashboard charts (Chart.js).
+    Loads all analytics: trend, distribution, classroom comparison,
+    student distribution, device status, and attendance source.
     """
+
     template_name = "auth_core/partials/dashboard_charts.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from apps.attendance.services.analytics_service import AnalyticsService
-        
-        days = int(self.request.GET.get("days", 7))
+        import datetime
+
+        days = int(self.request.GET.get("days", 30))
         classroom_id = self.request.GET.get("classroom", "")
-        
+
         try:
             date_str = self.request.GET.get("date", "")
-            if date_str:
-                import datetime
-                date = datetime.date.fromisoformat(date_str)
-            else:
-                date = None
+            date = datetime.date.fromisoformat(date_str) if date_str else None
         except ValueError:
             date = None
 
@@ -112,5 +112,14 @@ class DashboardChartsView(LoginRequiredMixin, TemplateView):
         context["comparison_data"] = AnalyticsService.get_classroom_comparison_data(
             self.request.user, date=date
         )
-        
+        context["student_distribution_data"] = AnalyticsService.get_student_distribution_data(
+            self.request.user
+        )
+        context["device_status_data"] = AnalyticsService.get_device_status_breakdown(
+            self.request.user
+        )
+        context["source_data"] = AnalyticsService.get_attendance_source_breakdown(
+            self.request.user, days=days
+        )
+
         return context

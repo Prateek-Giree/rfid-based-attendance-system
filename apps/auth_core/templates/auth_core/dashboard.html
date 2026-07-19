@@ -5,28 +5,34 @@
 {% block content %}
 
 {% if is_admin %}
-    {% include "partials/components/page_header.html" with header_title="Admin Dashboard" header_subtitle="System overview and quick stats" header_icon="layout-dashboard" %}
+{% include "partials/components/page_header.html" with header_title="Admin Dashboard" header_subtitle="System overview and quick stats" header_icon="layout-dashboard" %}
 {% else %}
-    {% include "partials/components/page_header.html" with header_title="Teacher Dashboard" header_subtitle="Your classroom overview" header_icon="layout-dashboard" %}
+{% include "partials/components/page_header.html" with header_title="Teacher Dashboard" header_subtitle="Your classroom overview" header_icon="layout-dashboard" %}
 {% endif %}
 
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-
-    {% if is_admin %}
-    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
-    {% include "partials/components/stat_card.html" with card_title="Total Teachers" card_value=total_teachers card_icon="graduation-cap" card_color="green" card_trend=active_teachers card_trend_up=True card_trend_label="Active Teachers" %}
-    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="amber" card_trend=today_present card_trend_up=True card_trend_label="Present Today" %}
-    {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value=active_devices card_icon="cpu" card_color="blue" card_trend=total_devices card_trend_up=True card_trend_label="Registered Devices" %}
-    {% else %}
-    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
-    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=my_classrooms_count card_icon="school" card_color="green" %}
-    {% include "partials/components/stat_card.html" with card_title="My Students" card_value=my_students_count card_icon="users" card_color="amber" %}
-    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="blue" card_trend=today_present card_trend_up=True card_trend_label="Present Today" %}
-    {% endif %}
-
+{% if is_admin %}
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=students_added_this_month card_trend_up=True card_trend_label="added this month" %}
+    {% include "partials/components/stat_card.html" with card_title="Total Teachers" card_value=total_teachers card_icon="graduation-cap" card_color="green" card_trend=teachers_added_this_month card_trend_up=True card_trend_label="added this month" %}
+    {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value=active_devices card_icon="cpu" card_color="blue" card_trend=offline_devices card_trend_up=False card_trend_label="offline" %}
+    {% include "partials/components/stat_card.html" with card_title="Today's Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="amber" card_trend=today_present card_trend_up=True card_trend_label="present today" %}
 </div>
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    {% include "partials/components/stat_card.html" with card_title="Active Students" card_value=active_students card_icon="user-check" card_color="green" %}
+    {% include "partials/components/stat_card.html" with card_title="Active Teachers" card_value=active_teachers card_icon="user-check" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="Disabled Devices" card_value=disabled_devices card_icon="cpu-off" card_color="red" %}
+    {% include "partials/components/stat_card.html" with card_title="Total Attendance Records" card_value=total_attendance_records card_icon="clipboard-list" card_color="amber" card_trend=today_present card_trend_up=True card_trend_label="marked today" %}
+</div>
+{% else %}
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    {% include "partials/components/stat_card.html" with card_title="My Students" card_value=my_students_count card_icon="users" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=my_classrooms_count card_icon="school" card_color="green" %}
+    {% include "partials/components/stat_card.html" with card_title="Today's Attendance" card_value=today_present card_icon="clipboard-check" card_color="amber" card_trend=today_late card_trend_up=True card_trend_label="late" %}
+    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value=attendance_rate card_icon="bar-chart-3" card_color="blue" %}
+</div>
+{% endif %}
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
     <div class="lg:col-span-2 card p-6">
         <div class="flex items-center justify-between mb-4">
@@ -50,7 +56,6 @@
     </div>
 
     <div class="flex flex-col gap-6">
-
         <div class="card p-6">
             <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Quick Actions</h2>
             <div class="space-y-2">
@@ -123,21 +128,22 @@
                 {% endfor %}
             </div>
         </div>
-
     </div>
 
-<div class="mt-8">
+</div>
+
+<div class="mb-4">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
         <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Attendance Analytics</h2>
-        <form class="flex items-center gap-3" 
-              hx-get="{% url 'auth_core:dashboard_charts' %}" 
-              hx-target="#charts-container" 
+        <form class="flex flex-wrap items-center gap-3"
+              hx-get="{% url 'auth_core:dashboard_charts' %}"
+              hx-target="#charts-container"
               hx-trigger="change">
-            
+
             <select name="days" class="input-field py-1 px-2 text-xs w-auto">
                 <option value="7">Last 7 Days</option>
                 <option value="14">Last 14 Days</option>
-                <option value="30">Last 30 Days</option>
+                <option value="30" selected>Last 30 Days</option>
             </select>
 
             <input type="date" name="date" class="input-field py-1 px-2 text-xs w-auto" value="{% now 'Y-m-d' %}">
@@ -146,14 +152,14 @@
             <select name="classroom" class="input-field py-1 px-2 text-xs w-auto">
                 <option value="">All Classrooms</option>
                 {% for item in students_per_classroom %}
-                <option value="{{ item.classroom.id }}">{{ item.classroom }}</option>
+                <option value="{{ item.classroom_id }}">{{ item.classroom }}</option>
                 {% endfor %}
             </select>
             {% endif %}
         </form>
     </div>
 
-    <div id="charts-container" hx-get="{% url 'auth_core:dashboard_charts' %}" hx-trigger="load">
+    <div id="charts-container" hx-get="{% url 'auth_core:dashboard_charts' %}?days=30" hx-trigger="load">
         <div class="p-12 text-center text-slate-500">
             <i data-lucide="loader-2" class="h-6 w-6 animate-spin mx-auto mb-2 text-primary"></i>
             <p class="text-xs">Loading analytics...</p>

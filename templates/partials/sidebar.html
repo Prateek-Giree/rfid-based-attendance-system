@@ -40,11 +40,11 @@
         </a>
         {% endif %}
 
-        {# Students — Admin only #}
-        {% if is_admin %}
-        <a href="#"
-           class="sidebar-link opacity-50 cursor-not-allowed"
-           title="Coming in Phase 2">
+        {# Students — Admin and Teacher #}
+        {% if is_admin or is_teacher %}
+        <a href="{% url 'students:student_list' %}"
+           class="{% if 'students' in request.path %}sidebar-link-active{% else %}sidebar-link{% endif %}"
+           aria-current="{% if 'students' in request.path %}page{% endif %}">
             <i data-lucide="users" class="h-4 w-4 flex-shrink-0"></i>
             Students
         </a>

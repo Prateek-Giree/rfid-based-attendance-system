@@ -1,0 +1,50 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Teachers{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title="Teacher Management" header_subtitle="Manage teacher accounts and classroom assignments" header_icon="graduation-cap" %}
+
+    <div>
+        <a href="{% url 'auth_core:teacher_create' %}" class="btn-primary">
+            <i data-lucide="plus" class="h-4 w-4"></i> Add Teacher
+        </a>
+    </div>
+</div>
+
+<div class="card p-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+        <div class="relative max-w-md w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            </span>
+            <input type="text"
+                   name="q"
+                   value="{{ q|default:'' }}"
+                   placeholder="Search by name, email, or contact..."
+                   class="input-field pl-10"
+                   hx-get="{% url 'auth_core:teacher_list' %}"
+                   hx-trigger="keyup changed delay:300ms, search"
+                   hx-target="#teacher-table-container"
+                   hx-indicator="#search-indicator">
+            <span id="search-indicator" class="htmx-indicator absolute inset-y-0 right-0 pr-3 flex items-center">
+                <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </span>
+        </div>
+
+    </div>
+
+    <div id="teacher-table-container" class="overflow-x-auto">
+        {% include "auth_core/teachers/partials/teacher_table.html" %}
+    </div>
+
+</div>
+
+{% endblock %}

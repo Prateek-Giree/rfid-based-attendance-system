@@ -4,46 +4,40 @@
 
 {% block content %}
 
-{# ── Page Header ─────────────────────────────────────────────────────── #}
 {% if is_admin %}
     {% include "partials/components/page_header.html" with header_title="Admin Dashboard" header_subtitle="System overview and quick stats" header_icon="layout-dashboard" %}
 {% else %}
-    {% include "partials/components/page_header.html" with  header_title="Teacher Dashboard"  header_subtitle="Your classroom overview" header_icon="layout-dashboard" %}
+    {% include "partials/components/page_header.html" with header_title="Teacher Dashboard" header_subtitle="Your classroom overview" header_icon="layout-dashboard" %}
 {% endif %}
 
-{# ── Stat Cards ──────────────────────────────────────────────────────── #}
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
 
-    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
-
-    {% include "partials/components/stat_card.html" with card_title="Present Today" card_value="—" card_icon="clipboard-check" card_color="green" %}
-
-    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="amber" %}
-
     {% if is_admin %}
+    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
+    {% include "partials/components/stat_card.html" with card_title="Total Teachers" card_value=total_teachers card_icon="graduation-cap" card_color="green" card_trend=active_teachers card_trend_up=True card_trend_label="Active Teachers" %}
+    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="amber" %}
     {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value="—" card_icon="cpu" card_color="blue" %}
     {% else %}
-    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=students_per_classroom|length card_icon="school" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
+    {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=my_classrooms_count card_icon="school" card_color="green" %}
+    {% include "partials/components/stat_card.html" with card_title="My Students" card_value=my_students_count card_icon="users" card_color="amber" %}
+    {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="blue" %}
     {% endif %}
 
 </div>
 
-{# ── Content placeholder rows ────────────────────────────────────────── #}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    {# Recent Attendance — spans 2 cols #}
     <div class="lg:col-span-2 card p-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Recent Attendance</h2>
-            <span class="badge-info">Coming in Phase 4</span>
+            <span class="badge-info">Coming in Phase 6</span>
         </div>
         {% include "partials/components/empty_state.html" with icon="clipboard-x" title="No Attendance Data" message="Attendance records will appear here once the attendance module is set up." %}
     </div>
 
-    {# Right Sidebar: Quick Actions & Classroom Distribution #}
     <div class="flex flex-col gap-6">
-        
-        {# Quick Actions #}
+
         <div class="card p-6">
             <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Quick Actions</h2>
             <div class="space-y-2">
@@ -58,9 +52,20 @@
                         <p class="text-xs text-slate-400">Register a new student</p>
                     </div>
                 </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+
+                <a href="{% url 'auth_core:teacher_create' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                     <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="cpu" class="h-4 w-4 text-success dark:text-emerald-400"></i>
+                        <i data-lucide="graduation-cap" class="h-4 w-4 text-success dark:text-emerald-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Add Teacher</p>
+                        <p class="text-xs text-slate-400">Create a teacher account</p>
+                    </div>
+                </a>
+
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700/30 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="cpu" class="h-4 w-4 text-slate-500 dark:text-slate-400"></i>
                     </span>
                     <div>
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Register Device</p>
@@ -92,7 +97,6 @@
             </div>
         </div>
 
-        {# Classroom Distribution #}
         <div class="card p-6">
             <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Classroom Distribution</h2>
             <div class="space-y-3">

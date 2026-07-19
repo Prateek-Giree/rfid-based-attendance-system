@@ -1,0 +1,94 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+<div class="mb-6">
+    {% include "partials/components/page_header.html" with header_title=page_title header_subtitle="Fill in the teacher's personal and contact details below" header_icon="graduation-cap" %}
+</div>
+
+<div class="max-w-2xl card p-6">
+    <form method="POST" action="" class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/30 text-danger border border-red-200 dark:border-red-800 text-sm">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="{{ form.first_name.id_for_label }}" class="input-label">First Name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                <p class="input-error">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.last_name.id_for_label }}" class="input-label">Last Name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                <p class="input-error">{% for error in form.last_name.errors %}{{ error }}{% endfor %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.email.id_for_label }}" class="input-label">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <p class="input-error">{% for error in form.email.errors %}{{ error }}{% endfor %}</p>
+            {% endif %}
+            <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                This email is used for login and must be unique across the system.
+            </p>
+        </div>
+
+        <div>
+            <label for="{{ form.contact.id_for_label }}" class="input-label">Contact Number</label>
+            {{ form.contact }}
+            {% if form.contact.errors %}
+            <p class="input-error">{% for error in form.contact.errors %}{{ error }}{% endfor %}</p>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="{{ form.password1.id_for_label }}" class="input-label">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                <p class="input-error">{% for error in form.password1.errors %}{{ error }}{% endfor %}</p>
+                {% endif %}
+                {% if teacher %}
+                <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                    Leave blank to keep existing password.
+                </p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.password2.id_for_label }}" class="input-label">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                <p class="input-error">{% for error in form.password2.errors %}{{ error }}{% endfor %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+            <button type="submit" class="btn-primary">
+                <i data-lucide="check" class="h-4 w-4"></i> Save Teacher
+            </button>
+            {% if teacher %}
+            <a href="{% url 'auth_core:teacher_detail' teacher.pk %}" class="btn-secondary">Cancel</a>
+            {% else %}
+            <a href="{% url 'auth_core:teacher_list' %}" class="btn-secondary">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% endblock %}

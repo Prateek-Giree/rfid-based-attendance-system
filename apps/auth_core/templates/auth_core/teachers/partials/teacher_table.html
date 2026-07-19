@@ -1,0 +1,200 @@
+<table class="table-base">
+    <thead>
+        <tr>
+            <th class="table-header">Name</th>
+            <th class="table-header">Email</th>
+            <th class="table-header">Contact</th>
+            <th class="table-header text-center">Classrooms</th>
+            <th class="table-header">Status</th>
+            <th class="table-header text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+        {% for teacher in teachers %}
+        <tr class="table-row">
+            <td class="table-cell">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                        {{ teacher.user.first_name|first|upper }}{{ teacher.user.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <p class="font-medium text-slate-900 dark:text-white">{{ teacher }}</p>
+                        <p class="text-xs text-slate-400">ID #{{ teacher.pk }}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="table-cell text-slate-600 dark:text-slate-300">{{ teacher.user.email }}</td>
+            <td class="table-cell text-slate-500 dark:text-slate-400">{{ teacher.contact|default:"—" }}</td>
+            <td class="table-cell text-center">
+                <span class="badge-info">{{ teacher.classrooms.count }} classrooms</span>
+            </td>
+            <td class="table-cell">
+                {% if teacher.user.is_active %}
+                <span class="badge-success">Active</span>
+                {% else %}
+                <span class="badge-danger">Inactive</span>
+                {% endif %}
+            </td>
+            <td class="table-cell text-right">
+                <div class="inline-flex items-center justify-end gap-3 w-full">
+                    <a href="{% url 'auth_core:teacher_detail' teacher.pk %}"
+                       class="text-primary-600 hover:text-primary-900 flex items-center gap-1 text-xs font-medium"
+                       title="View teacher profile">
+                        <i data-lucide="eye" class="h-3.5 w-3.5"></i> View
+                    </a>
+
+                    <a href="{% url 'auth_core:teacher_update' teacher.pk %}"
+                       class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 text-xs font-medium"
+                       title="Edit teacher">
+                        <i data-lucide="edit" class="h-3.5 w-3.5"></i> Edit
+                    </a>
+
+                    {% if teacher.user.is_active %}
+                    <button type="button"
+                            class="text-danger hover:text-red-700 flex items-center gap-1 text-xs font-medium cursor-pointer"
+                            onclick="confirmDeactivate('{% url 'auth_core:teacher_deactivate' teacher.pk %}', '{{ teacher|escapejs }}')">
+                        <i data-lucide="user-x" class="h-3.5 w-3.5"></i> Deactivate
+                    </button>
+                    {% else %}
+                    <span class="text-xs text-slate-400 italic">Inactive</span>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="px-6 py-12">
+                {% include "partials/components/empty_state.html" with icon="graduation-cap" title="No Teachers Found" message="No teacher accounts matched your search. Add a teacher to get started." action_url="/teachers/create/" action_label="Add Teacher" %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 px-4 py-4 sm:px-6 mt-4">
+    <div class="flex flex-1 justify-between sm:hidden">
+        {% if page_obj.has_previous %}
+        <button hx-get="{% url 'auth_core:teacher_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}"
+                hx-target="#teacher-table-container"
+                hx-indicator="#search-indicator"
+                class="relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+            Previous
+        </button>
+        {% else %}
+        <span class="opacity-50 relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            Previous
+        </span>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <button hx-get="{% url 'auth_core:teacher_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}"
+                hx-target="#teacher-table-container"
+                hx-indicator="#search-indicator"
+                class="relative ml-3 inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+            Next
+        </button>
+        {% else %}
+        <span class="opacity-50 relative ml-3 inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            Next
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-slate-700 dark:text-slate-300">
+                Showing
+                <span class="font-medium">{{ page_obj.start_index }}</span>
+                to
+                <span class="font-medium">{{ page_obj.end_index }}</span>
+                of
+                <span class="font-medium">{{ paginator.count }}</span>
+                results
+            </p>
+        </div>
+
+        <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                {% if page_obj.has_previous %}
+                <button hx-get="{% url 'auth_core:teacher_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}"
+                        hx-target="#teacher-table-container"
+                        hx-indicator="#search-indicator"
+                        class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Previous</span>
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+
+                {% for page_num in paginator.page_range %}
+                    {% if page_obj.number == page_num %}
+                    <span class="relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                        {{ page_num }}
+                    </span>
+                    {% elif page_num > page_obj.number|add:"-3" and page_num < page_obj.number|add:"3" %}
+                    <button hx-get="{% url 'auth_core:teacher_list' %}?page={{ page_num }}&q={{ q|default:'' }}"
+                            hx-target="#teacher-table-container"
+                            hx-indicator="#search-indicator"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                        {{ page_num }}
+                    </button>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <button hx-get="{% url 'auth_core:teacher_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}"
+                        hx-target="#teacher-table-container"
+                        hx-indicator="#search-indicator"
+                        class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Next</span>
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </button>
+                {% else %}
+                <span class="opacity-50 relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                    <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    function confirmDeactivate(url, name) {
+        Swal.fire({
+            title: 'Deactivate Teacher?',
+            html: `<p class="text-sm text-slate-600">Are you sure you want to deactivate <strong>${name}</strong>?</p><p class="text-xs text-slate-400 mt-1">Their account will be disabled. Classrooms and history are preserved.</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, Deactivate',
+            cancelButtonText: 'Cancel',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrf) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrfmiddlewaretoken';
+                    input.value = csrf.value;
+                    form.appendChild(input);
+                }
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+</script>

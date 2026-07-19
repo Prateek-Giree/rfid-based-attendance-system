@@ -61,10 +61,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["breadcrumbs"] = [
             {"label": "Dashboard", "url": None},
         ]
-        
-        # Inject Student statistics for dashboard widgets
+
         from apps.students.services import StudentService
-        stats = StudentService.get_student_stats(self.request.user)
-        context.update(stats)
-        
+        from apps.auth_core.services import TeacherService
+
+        student_stats = StudentService.get_student_stats(self.request.user)
+        teacher_stats = TeacherService.get_teacher_stats(self.request.user)
+        context.update(student_stats)
+        context.update(teacher_stats)
+
         return context

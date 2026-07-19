@@ -11,6 +11,12 @@ urlpatterns = [
     path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
     path("dashboard/charts/", views.DashboardChartsView.as_view(), name="dashboard_charts"),
 
+    # Authentication Security Enhancements
+    path("auth/verify-login-otp/", views.VerifyLoginOTPView.as_view(), name="verify_login_otp"),
+    path("auth/forgot-password/", views.ForgotPasswordView.as_view(), name="forgot_password"),
+    path("auth/verify-reset-otp/", views.VerifyPasswordOTPView.as_view(), name="verify_reset_otp"),
+    path("auth/reset-password/", views.ResetPasswordView.as_view(), name="reset_password"),
+
     # Teachers
     path("teachers/", teacher_views.TeacherListView.as_view(), name="teacher_list"),
     path("teachers/create/", teacher_views.TeacherCreateView.as_view(), name="teacher_create"),

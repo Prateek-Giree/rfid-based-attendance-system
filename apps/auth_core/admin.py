@@ -8,7 +8,7 @@ from unfold.forms import (
     UserCreationForm,
 )
 
-from .models import User, Teacher
+from .models import User, Teacher,OTPVerification
 
 admin.site.unregister(Group)
 
@@ -137,3 +137,28 @@ class TeacherAdmin(ModelAdmin):
     @admin.display(description="Email")
     def get_email(self, obj):
         return obj.user.email
+
+@admin.register(OTPVerification)
+class OTPVerificationAdmin(ModelAdmin):
+    list_display = (
+        "user",
+        "purpose",
+        "created_at",
+        "expires_at",
+        "is_used",
+    )
+
+    search_fields = (
+        "user__email",
+        "purpose",
+    )
+
+    list_filter = (
+        "purpose",
+        "is_used",
+        "created_at",
+    )
+
+    ordering = ("-created_at",)
+
+    list_per_page = 20

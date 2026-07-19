@@ -101,9 +101,16 @@
 
                 {# Password #}
                 <div class="mb-6">
-                    <label for="{{ form.password.id_for_label }}" class="input-label">
-                        Password
-                    </label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="{{ form.password.id_for_label }}" class="input-label !mb-0">
+                            Password
+                        </label>
+                        <div class="text-sm">
+                            <a href="{% url 'auth_core:forgot_password' %}" class="font-medium text-primary-600 dark:text-primary-400 hover:underline">
+                                Forgot password?
+                            </a>
+                        </div>
+                    </div>
                     {{ form.password }}
                     {% if form.password.errors %}
                     <p class="input-error">{{ form.password.errors.0 }}</p>

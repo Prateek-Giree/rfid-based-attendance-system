@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 
-from .models import Teacher
+from ..models import Teacher
 
 User = get_user_model()
 

@@ -124,6 +124,10 @@ function validateField(input) {
             result = validateApiKey(value);
             break;
 
+        case "otp":
+            result = validateOTP(value);
+            break;
+
         default:
             break;
     }

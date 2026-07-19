@@ -34,3 +34,67 @@ class LoginForm(AuthenticationForm):
             }
         ),
     )
+
+
+class ForgotPasswordForm(forms.Form):
+    email = forms.EmailField(
+        label="Email Address",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "input-field",
+                "placeholder": "you@example.com",
+                "autocomplete": "email",
+                "autofocus": True,
+                "data-validator": "email",
+                "data-required": "true",
+            }
+        ),
+    )
+
+
+class VerifyOTPForm(forms.Form):
+    otp_code = forms.CharField(
+        label="Enter OTP",
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(
+            attrs={
+                "class": "input-field text-center tracking-widest font-mono text-xl",
+                "placeholder": "------",
+                "autocomplete": "one-time-code",
+                "autofocus": True,
+                "data-validator": "otp",
+                "data-required": "true",
+                "inputmode": "numeric",
+            }
+        ),
+    )
+
+
+class ResetPasswordForm(forms.Form):
+    new_password = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "id": "new_password",
+                "class": "input-field",
+                "placeholder": "••••••••",
+                "autocomplete": "new-password",
+                "data-validator": "password",
+                "data-required": "true",
+            }
+        ),
+    )
+    confirm_password = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "input-field",
+                "placeholder": "••••••••",
+                "autocomplete": "new-password",
+                "data-validator": "password-confirm",
+                "data-match-field": "new_password",
+                "data-required": "true",
+            }
+        ),
+    )

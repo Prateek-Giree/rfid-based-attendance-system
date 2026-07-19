@@ -1,10 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import login as auth_login
 from django.urls import reverse_lazy
 from django.views.generic import RedirectView, TemplateView
+from django.views.generic.edit import FormView
+from django.shortcuts import redirect
+from django.core.exceptions import ValidationError
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
-from .forms import LoginForm
+from .forms import LoginForm, ForgotPasswordForm, VerifyOTPForm, ResetPasswordForm
+from apps.auth_core.models import User
+from .services.otp_service import OTPService
 
 
 class RootRedirectView(RedirectView):
@@ -17,7 +25,7 @@ class RootRedirectView(RedirectView):
 
 
 class CustomLoginView(LoginView):
-    """Email-based login. Redirects authenticated users away immediately."""
+    """Email-based login. Implements two-step OTP verification."""
 
     template_name = "auth_core/login.html"
     form_class = LoginForm
@@ -27,12 +35,153 @@ class CustomLoginView(LoginView):
         return reverse_lazy("auth_core:dashboard")
 
     def form_valid(self, form):
-        messages.success(self.request, "Welcome back! You are now logged in.")
-        return super().form_valid(form)
+        user = form.get_user()
+        try:
+            otp = OTPService.generate_otp(user, "login", expiry_minutes=5)
+            OTPService.send_otp_email(user, "login", otp)
+            self.request.session["pre_otp_user_id"] = user.id
+            messages.info(self.request, "An OTP has been sent to your email. Please verify.")
+            return redirect("auth_core:verify_login_otp")
+        except ValidationError as e:
+            messages.error(self.request, e.message)
+            return super().form_invalid(form)
+        except Exception:
+            messages.error(self.request, "Failed to send OTP email. Please try again later.")
+            return super().form_invalid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password. Please try again.")
         return super().form_invalid(form)
+
+
+@method_decorator(never_cache, name='dispatch')
+class VerifyLoginOTPView(FormView):
+    template_name = "auth_core/verify_login_otp.html"
+    form_class = VerifyOTPForm
+    success_url = reverse_lazy("auth_core:dashboard")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get("pre_otp_user_id"):
+            messages.error(request, "Session expired. Please log in again.")
+            return redirect("auth_core:login")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.request.session.get("pre_otp_user_id")
+        user = User.objects.filter(id=user_id).first()
+        if user:
+            context["email"] = user.email
+        return context
+
+    def form_valid(self, form):
+        user_id = self.request.session.get("pre_otp_user_id")
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            messages.error(self.request, "User not found.")
+            return redirect("auth_core:login")
+            
+        otp_code = form.cleaned_data["otp_code"]
+        
+        if OTPService.verify_otp(user, "login", otp_code):
+            auth_login(self.request, user)
+            del self.request.session["pre_otp_user_id"]
+            messages.success(self.request, "Welcome back! You are now logged in.")
+            return super().form_valid(form)
+        else:
+            messages.error(self.request, "Invalid or expired OTP.")
+            return super().form_invalid(form)
+
+
+@method_decorator(never_cache, name='dispatch')
+class ForgotPasswordView(FormView):
+    template_name = "auth_core/forgot_password.html"
+    form_class = ForgotPasswordForm
+    success_url = reverse_lazy("auth_core:verify_reset_otp")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        user = User.objects.filter(email=email).first()
+        
+        if user:
+            try:
+                otp = OTPService.generate_otp(user, "password_reset", expiry_minutes=10)
+                OTPService.send_otp_email(user, "password_reset", otp)
+                self.request.session["reset_email"] = email
+                messages.success(self.request, "A password reset OTP has been sent to your email.")
+                return super().form_valid(form)
+            except ValidationError as e:
+                messages.error(self.request, e.message)
+                return super().form_invalid(form)
+            except Exception:
+                messages.error(self.request, "Failed to send email. Please try again later.")
+                return super().form_invalid(form)
+        else:
+            # Prevent email enumeration: act like it succeeded
+            messages.success(self.request, "If the email exists, an OTP has been sent.")
+            return super().form_valid(form)
+
+
+@method_decorator(never_cache, name='dispatch')
+class VerifyPasswordOTPView(FormView):
+    template_name = "auth_core/verify_reset_otp.html"
+    form_class = VerifyOTPForm
+    success_url = reverse_lazy("auth_core:reset_password")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get("reset_email"):
+            messages.error(request, "Session expired. Please start over.")
+            return redirect("auth_core:forgot_password")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["email"] = self.request.session.get("reset_email")
+        return context
+
+    def form_valid(self, form):
+        email = self.request.session.get("reset_email")
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return redirect("auth_core:forgot_password")
+            
+        otp_code = form.cleaned_data["otp_code"]
+        
+        if OTPService.verify_otp(user, "password_reset", otp_code):
+            # Give permission to reset password
+            self.request.session["can_reset_password"] = True
+            return super().form_valid(form)
+        else:
+            messages.error(self.request, "Invalid or expired OTP.")
+            return super().form_invalid(form)
+
+
+@method_decorator(never_cache, name='dispatch')
+class ResetPasswordView(FormView):
+    template_name = "auth_core/reset_password.html"
+    form_class = ResetPasswordForm
+    success_url = reverse_lazy("auth_core:login")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get("can_reset_password") or not request.session.get("reset_email"):
+            messages.error(request, "Session expired. Please start over.")
+            return redirect("auth_core:forgot_password")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        email = self.request.session.get("reset_email")
+        user = User.objects.filter(email=email).first()
+        if user:
+            new_password = form.cleaned_data["new_password"]
+            user.set_password(new_password)
+            user.save()
+            messages.success(self.request, "Password reset successfully. You can now log in.")
+        
+        # Clear session vars
+        self.request.session.pop("reset_email", None)
+        self.request.session.pop("can_reset_password", None)
+        
+        return super().form_valid(form)
 
 
 class CustomLogoutView(LogoutView):

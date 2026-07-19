@@ -192,3 +192,19 @@ function validateApiKey(value) {
     return { valid: true, message: "" };
 }
 
+/**
+ * Validates an OTP code.
+ * Rules: exactly 6 digits.
+ */
+function validateOTP(value) {
+    const trimmed = value ? value.trim() : "";
+    if (trimmed === "") {
+        return { valid: false, message: "OTP is required." };
+    }
+    const OTP_REGEX = /^\d{6}$/;
+    if (!OTP_REGEX.test(trimmed)) {
+        return { valid: false, message: "OTP must be exactly 6 digits." };
+    }
+    return { valid: true, message: "" };
+}
+

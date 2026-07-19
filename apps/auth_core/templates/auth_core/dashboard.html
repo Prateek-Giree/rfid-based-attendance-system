@@ -16,7 +16,7 @@
     {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
     {% include "partials/components/stat_card.html" with card_title="Total Teachers" card_value=total_teachers card_icon="graduation-cap" card_color="green" card_trend=active_teachers card_trend_up=True card_trend_label="Active Teachers" %}
     {% include "partials/components/stat_card.html" with card_title="Attendance Rate" card_value="—" card_icon="bar-chart-3" card_color="amber" %}
-    {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value="—" card_icon="cpu" card_color="blue" %}
+    {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value=active_devices card_icon="cpu" card_color="blue" card_trend=total_devices card_trend_up=True card_trend_label="Registered Devices" %}
     {% else %}
     {% include "partials/components/stat_card.html" with card_title="Total Students" card_value=total_students card_icon="users" card_color="blue" card_trend=active_students card_trend_up=True card_trend_label="Active Students" %}
     {% include "partials/components/stat_card.html" with card_title="My Classrooms" card_value=my_classrooms_count card_icon="school" card_color="green" %}
@@ -63,13 +63,13 @@
                     </div>
                 </a>
 
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                    <span class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700/30 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="cpu" class="h-4 w-4 text-slate-500 dark:text-slate-400"></i>
+                <a href="{% url 'devices:device_create' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="cpu" class="h-4 w-4 text-indigo-600 dark:text-indigo-400"></i>
                     </span>
                     <div>
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Register Device</p>
-                        <p class="text-xs text-slate-400">Coming in Phase 5</p>
+                        <p class="text-xs text-slate-400">Register a new RFID device</p>
                     </div>
                 </a>
                 {% endif %}

@@ -78,9 +78,9 @@
 
         {# Devices — Admin only #}
         {% if is_admin %}
-        <a href="#"
-           class="sidebar-link opacity-50 cursor-not-allowed"
-           title="Coming in Phase 3">
+        <a href="{% url 'devices:device_list' %}"
+           class="{% if 'devices' in request.path %}sidebar-link-active{% else %}sidebar-link{% endif %}"
+           aria-current="{% if 'devices' in request.path %}page{% endif %}">
             <i data-lucide="cpu" class="h-4 w-4 flex-shrink-0"></i>
             Devices
         </a>

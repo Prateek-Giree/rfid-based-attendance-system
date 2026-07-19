@@ -64,10 +64,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         from apps.students.services import StudentService
         from apps.auth_core.services import TeacherService
+        from apps.attendance.services.device_service import DeviceService
 
         student_stats = StudentService.get_student_stats(self.request.user)
         teacher_stats = TeacherService.get_teacher_stats(self.request.user)
+        device_stats = DeviceService.get_device_stats(self.request.user)
+
         context.update(student_stats)
         context.update(teacher_stats)
+        context.update(device_stats)
 
         return context
+

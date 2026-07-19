@@ -1,0 +1,161 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Device Details — {{ device.name }}{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title=device.name header_subtitle="View API key, status, and activity analytics for this RFID reader" header_icon="cpu" %}
+
+    <div class="flex items-center gap-2">
+        <a href="{% url 'devices:device_update' device.pk %}" class="btn-secondary">
+            <i data-lucide="edit" class="h-4 w-4"></i> Edit Device
+        </a>
+        <a href="{% url 'devices:device_list' %}" class="btn-secondary">
+            Back to List
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    {# Info Panel #}
+    <div class="lg:col-span-1 flex flex-col gap-6">
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="info" class="h-4 w-4 text-primary"></i> Device Info
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <span class="text-xs text-slate-400 block">Device ID</span>
+                    <span class="text-sm font-mono font-medium text-slate-700 dark:text-slate-200">#{{ device.pk }}</span>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-400 block">Assigned Classroom</span>
+                    <a href="{% url 'students:classroom_detail' device.classroom.pk %}" class="text-sm font-medium text-primary hover:underline">
+                        {{ device.classroom }}
+                    </a>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-400 block">Status</span>
+                    <span class="{{ device.status_badge_class }} mt-1 inline-block">
+                        {{ device.derived_status }}
+                    </span>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-400 block">Last Seen</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                        {% if device.last_seen %}
+                            {{ device.last_seen|date:"Y-m-d H:i:s" }}
+                        {% else %}
+                            <span class="text-slate-400 italic">Never seen</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-400 block">Created At</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ device.created_at|date:"M d, Y H:i:s" }}</span>
+                </div>
+
+                <div class="border-t border-slate-200 dark:border-slate-700/50 pt-4">
+                    <span class="text-xs text-slate-400 block mb-1">API Authentication Key</span>
+                    <div class="flex items-center gap-2">
+                        <input type="password" 
+                               id="api-key-input" 
+                               value="{{ device.api_key }}" 
+                               readonly
+                               class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-1.5 text-xs font-mono text-slate-600 dark:text-slate-300 flex-1 select-all cursor-text focus:outline-none">
+                        
+                        <button type="button" 
+                                onclick="toggleApiKey()" 
+                                id="toggle-key-btn"
+                                class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                title="Show/Hide API Key">
+                            <i data-lucide="eye" class="h-4 w-4" id="toggle-eye-icon"></i>
+                        </button>
+                        
+                        <button type="button" 
+                                onclick="copyApiKey()" 
+                                class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                title="Copy API Key">
+                            <i data-lucide="copy" class="h-4 w-4" id="copy-icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Analytics/Logs Panel #}
+    <div class="lg:col-span-2 flex flex-col gap-6">
+        
+        {# Device Statistics Placeholder #}
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="h-4 w-4 text-emerald-500"></i> Device Statistics
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <p class="text-xs text-slate-400">Total Scans Received</p>
+                    <p class="text-2xl font-bold mt-1 text-slate-700 dark:text-slate-200">0</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Placeholder — Scans will sync in Phase 6</p>
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <p class="text-xs text-slate-400">Device Uptime</p>
+                    <p class="text-2xl font-bold mt-1 text-slate-700 dark:text-slate-200">99.8%</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Estimated connection rate</p>
+                </div>
+            </div>
+        </div>
+
+        {# Attendance Statistics Placeholder #}
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="clipboard-check" class="h-4 w-4 text-indigo-500"></i> Attendance Statistics
+            </h2>
+            {% include "partials/components/empty_state.html" with icon="activity" title="No Scan Activity" message="Live scan activity and sync success rates will display here once scans are processed." %}
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function toggleApiKey() {
+        const input = document.getElementById('api-key-input');
+        const icon = document.getElementById('toggle-eye-icon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function copyApiKey() {
+        const input = document.getElementById('api-key-input');
+        input.select();
+        navigator.clipboard.writeText(input.value).then(() => {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'API key copied to clipboard',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+        });
+    }
+</script>
+
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models
 from secrets import token_hex
-
+from datetime import timedelta
+from django.utils import timezone
 
 class RFIDDevice(models.Model):
     name = models.CharField(max_length=100)

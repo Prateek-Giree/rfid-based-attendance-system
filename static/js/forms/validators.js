@@ -176,3 +176,19 @@ function validatePasswordMatch(password, confirmPassword, required = true) {
     }
     return { valid: true, message: "" };
 }
+
+/**
+ * Validates an API Key.
+ * Rules: required, minimum 16 characters.
+ */
+function validateApiKey(value) {
+    const trimmed = value ? value.trim() : "";
+    if (trimmed === "") {
+        return { valid: false, message: "API key is required." };
+    }
+    if (trimmed.length < 16) {
+        return { valid: false, message: "API key must be at least 16 characters." };
+    }
+    return { valid: true, message: "" };
+}
+

@@ -1,0 +1,58 @@
+{% extends "base_auth.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+{% include "partials/components/page_header.html" with header_title=page_title header_subtitle="Specify device registration details and classroom installation location" header_icon="cpu" %}
+
+<div class="card max-w-2xl mx-auto p-6 mt-6">
+    <form method="POST" novalidate>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 text-danger text-sm rounded-lg">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-4">
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="field-label">Device Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="input-error mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.classroom.id_for_label }}" class="field-label">Assigned Classroom</label>
+                {{ form.classroom }}
+                {% if form.classroom.errors %}
+                <p class="input-error mt-1">{{ form.classroom.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            {% if form.is_active %}
+            <div class="flex items-center gap-3 py-2">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Device is active and accepting connections
+                </label>
+                {% if form.is_active.errors %}
+                <p class="input-error mt-1">{{ form.is_active.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/50">
+            <a href="{% url 'devices:device_list' %}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary">Save Device</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

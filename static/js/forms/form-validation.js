@@ -120,6 +120,10 @@ function validateField(input) {
             break;
         }
 
+        case "api-key":
+            result = validateApiKey(value);
+            break;
+
         default:
             break;
     }
@@ -190,3 +194,7 @@ function initFormValidation() {
 
 document.addEventListener("DOMContentLoaded", initFormValidation);
 document.addEventListener("htmx:afterSwap", initFormValidation);
+
+// Alias for phase compatibility
+const attachValidation = attachFormHandlers;
+

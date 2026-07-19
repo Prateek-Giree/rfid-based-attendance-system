@@ -1,0 +1,57 @@
+{% extends "base_auth.html" %}
+
+{% block title %}RFID Devices{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    {% include "partials/components/page_header.html" with header_title="Device Management" header_subtitle="Manage RFID scanning devices and classroom assignments" header_icon="cpu" %}
+
+    <div>
+        <a href="{% url 'devices:device_create' %}" class="btn-primary">
+            <i data-lucide="plus" class="h-4 w-4"></i> Register Device
+        </a>
+    </div>
+</div>
+
+{# Devices Statistics Row #}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    {% include "partials/components/stat_card.html" with card_title="Active Devices" card_value=active_devices card_icon="wifi" card_color="green" %}
+    {% include "partials/components/stat_card.html" with card_title="Offline Devices" card_value=offline_devices card_icon="wifi-off" card_color="amber" %}
+    {% include "partials/components/stat_card.html" with card_title="Disabled Devices" card_value=disabled_devices card_icon="ban" card_color="red" %}
+</div>
+
+<div class="card p-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+        <div class="relative max-w-md w-full">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            </span>
+            <input type="text"
+                   name="q"
+                   value="{{ q|default:'' }}"
+                   placeholder="Search by name, API key or classroom..."
+                   class="input-field pl-10"
+                   hx-get="{% url 'devices:device_list' %}"
+                   hx-trigger="keyup changed delay:300ms, search"
+                   hx-target="#device-table-container"
+                   hx-indicator="#search-indicator">
+            <span id="search-indicator" class="htmx-indicator absolute inset-y-0 right-0 pr-3 flex items-center">
+                <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </span>
+        </div>
+
+    </div>
+
+    <div id="device-table-container" class="overflow-x-auto">
+        {% include "devices/partials/device_table.html" %}
+    </div>
+
+</div>
+
+{% endblock %}

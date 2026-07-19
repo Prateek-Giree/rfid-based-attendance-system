@@ -16,6 +16,8 @@ class LoginForm(AuthenticationForm):
                 "placeholder": "you@example.com",
                 "autocomplete": "email",
                 "autofocus": True,
+                "data-validator": "email",
+                "data-required": "true",
             }
         ),
     )
@@ -27,6 +29,8 @@ class LoginForm(AuthenticationForm):
                 "class": "input-field",
                 "placeholder": "••••••••",
                 "autocomplete": "current-password",
+                "data-validator": "password",
+                "data-required": "true",
             }
         ),
     )

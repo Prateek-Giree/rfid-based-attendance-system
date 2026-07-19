@@ -92,6 +92,12 @@
             .input-error {
                 @apply mt-1 text-xs text-danger;
             }
+            .input-error-state {
+                @apply border-danger ring-2 ring-danger/30 focus:ring-danger focus:border-danger;
+            }
+            .input-success-state {
+                @apply border-success ring-2 ring-success/30 focus:ring-success focus:border-success;
+            }
             /* ── Sidebar ─────────────────────────── */
             .sidebar-link {
                 @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-nav-hover text-sm font-medium transition-colors duration-150;
@@ -150,6 +156,10 @@
 
     <!-- App JS -->
     <script src="{% static 'js/app.js' %}"></script>
+
+    <!-- Form Validation -->
+    <script src="{% static 'js/forms/validators.js' %}"></script>
+    <script src="{% static 'js/forms/form-validation.js' %}"></script>
 
     {% block extra_scripts %}{% endblock %}
 </body>

@@ -252,6 +252,7 @@ class DashboardChartsView(LoginRequiredMixin, TemplateView):
         except ValueError:
             date = None
 
+        # --- Existing charts ---
         context["trend_data"] = AnalyticsService.get_attendance_trend_data(
             self.request.user, days=days, classroom_id=classroom_id
         )
@@ -271,4 +272,28 @@ class DashboardChartsView(LoginRequiredMixin, TemplateView):
             self.request.user, days=days
         )
 
+        # --- Phase 7.5 — Advanced Analytics ---
+        context["registration_trend_data"] = AnalyticsService.get_student_registration_trend(
+            self.request.user, days=days, classroom_id=classroom_id
+        )
+        context["rfid_activity_data"] = AnalyticsService.get_rfid_scan_activity(
+            self.request.user, days=days
+        )
+        context["top_defaulters_data"] = AnalyticsService.get_top_defaulters(
+            self.request.user, limit=10, classroom_id=classroom_id
+        )
+        context["top_regular_data"] = AnalyticsService.get_top_regular_students(
+            self.request.user, limit=10, classroom_id=classroom_id
+        )
+        context["monthly_comparison_data"] = AnalyticsService.get_monthly_attendance_comparison(
+            self.request.user, months=6, classroom_id=classroom_id
+        )
+        context["heatmap_data"] = AnalyticsService.get_attendance_heatmap_data(
+            self.request.user, classroom_id=classroom_id
+        )
+        context["source_comparison_data"] = AnalyticsService.get_attendance_source_comparison(
+            self.request.user, days=days, classroom_id=classroom_id
+        )
+
         return context
+

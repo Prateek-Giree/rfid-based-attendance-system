@@ -78,12 +78,134 @@
 
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="user-plus" class="h-4 w-4 text-primary-600"></i>
+                New Student Registrations
+            </h2>
+            {% if registration_trend_data.data %}
+            <div class="h-64 w-full relative">
+                <canvas id="registrationTrendChart"></canvas>
+            </div>
+            {% else %}
+            {% include "partials/components/empty_state.html" with icon="user-plus" title="No Registration Data" message="No students registered in the selected period." %}
+            {% endif %}
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="wifi" class="h-4 w-4 text-primary-600"></i>
+                RFID Scan Activity
+            </h2>
+            {% if rfid_activity_data.total %}
+            <div class="h-64 w-full relative">
+                <canvas id="rfidActivityChart"></canvas>
+            </div>
+            {% else %}
+            {% include "partials/components/empty_state.html" with icon="wifi" title="No Scan Activity" message="No RFID scan logs found for the selected period." %}
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="star" class="h-4 w-4 text-emerald-500"></i>
+                Top Regular Students
+            </h2>
+            {% if top_regular_data.data %}
+            <div class="h-72 w-full relative">
+                <canvas id="topRegularChart"></canvas>
+            </div>
+            {% else %}
+            {% include "partials/components/empty_state.html" with icon="star" title="No Data" message="No student attendance records available." %}
+            {% endif %}
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="h-4 w-4 text-red-500"></i>
+                Top Defaulters
+            </h2>
+            {% if top_defaulters_data.data %}
+            <div class="h-72 w-full relative">
+                <canvas id="topDefaultersChart"></canvas>
+            </div>
+            {% else %}
+            {% include "partials/components/empty_state.html" with icon="alert-triangle" title="No Data" message="No student attendance records available." %}
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="calendar-range" class="h-4 w-4 text-primary-600"></i>
+            Monthly Attendance Comparison
+        </h2>
+        {% if monthly_comparison_data.labels %}
+        <div class="h-80 w-full relative">
+            <canvas id="monthlyComparisonChart"></canvas>
+        </div>
+        {% else %}
+        {% include "partials/components/empty_state.html" with icon="calendar-range" title="No Monthly Data" message="No attendance data available to compare months." %}
+        {% endif %}
+    </div>
+
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+            <i data-lucide="grid-3x3" class="h-4 w-4 text-primary-600"></i>
+            Attendance Heatmap — Last 365 Days
+        </h2>
+        {% if heatmap_data.cells %}
+        <div class="overflow-x-auto">
+            <div id="heatmap-grid" class="flex gap-1" style="min-width: max-content;">
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+            <span class="text-xs text-slate-400 dark:text-slate-500">Less</span>
+            <span class="w-3 h-3 rounded-sm bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-200 dark:bg-emerald-900"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-400 dark:bg-emerald-700"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-500 dark:bg-emerald-600"></span>
+            <span class="w-3 h-3 rounded-sm bg-emerald-700 dark:bg-emerald-400"></span>
+            <span class="text-xs text-slate-400 dark:text-slate-500">More</span>
+        </div>
+        {% else %}
+        {% include "partials/components/empty_state.html" with icon="grid-3x3" title="No Heatmap Data" message="No attendance data found for the last 365 days." %}
+        {% endif %}
+    </div>
+
+    <div class="flex justify-center">
+        <div class="card p-6 w-full lg:w-1/3">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="h-4 w-4 text-primary-600"></i>
+                Attendance Source
+            </h2>
+            {% if source_comparison_data.data %}
+            <div class="h-56 w-full relative">
+                <canvas id="sourceComparisonChart"></canvas>
+            </div>
+            {% else %}
+            {% include "partials/components/empty_state.html" with icon="pie-chart" title="No Source Data" message="No attendance records to categorise by source." %}
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 
 <script>
 (function () {
-    const charts = ['trendChartInst','distChartInst','compChartInst','studentDistChartInst','deviceStatusChartInst'];
-    charts.forEach(function(name) { if (window[name]) { window[name].destroy(); window[name] = null; } });
+    const allCharts = [
+        'trendChartInst','distChartInst','compChartInst','studentDistChartInst','deviceStatusChartInst',
+        'registrationTrendInst','rfidActivityInst','topRegularInst','topDefaultersInst',
+        'monthlyComparisonInst','sourceComparisonInst'
+    ];
+    allCharts.forEach(function(name) { if (window[name]) { window[name].destroy(); window[name] = null; } });
 
     const isDark = document.documentElement.classList.contains('dark');
     const tickColor  = isDark ? '#94a3b8' : '#475569';
@@ -94,12 +216,13 @@
         y: { ticks: { color: tickColor }, grid: { color: gridColor } }
     };
     const legendOpts = { labels: { color: tickColor, boxWidth: 12, padding: 16 } };
-
     const baseOpts = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: legendOpts }
     };
+
+    // --- Existing Charts ---
 
     const ctxTrend = document.getElementById('trendChart');
     if (ctxTrend) {
@@ -139,9 +262,7 @@
             options: {
                 ...baseOpts,
                 cutout: '65%',
-                plugins: {
-                    legend: { ...legendOpts, position: 'bottom' }
-                }
+                plugins: { legend: { ...legendOpts, position: 'bottom' } }
             }
         });
     }
@@ -188,9 +309,7 @@
             options: {
                 ...baseOpts,
                 cutout: '60%',
-                plugins: {
-                    legend: { ...legendOpts, position: 'right' }
-                }
+                plugins: { legend: { ...legendOpts, position: 'right' } }
             }
         });
     }
@@ -211,11 +330,253 @@
             options: {
                 ...baseOpts,
                 cutout: '60%',
-                plugins: {
-                    legend: { ...legendOpts, position: 'right' }
+                plugins: { legend: { ...legendOpts, position: 'right' } }
+            }
+        });
+    }
+
+    // --- Phase 7.5 — Advanced Charts ---
+
+    const ctxRegTrend = document.getElementById('registrationTrendChart');
+    if (ctxRegTrend) {
+        window.registrationTrendInst = new Chart(ctxRegTrend, {
+            type: 'line',
+            data: {
+                labels: {{ registration_trend_data.labels|safe }},
+                datasets: [{
+                    label: 'New Students Registered',
+                    data: {{ registration_trend_data.data|safe }},
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: { ...baseOpts, scales: baseScales }
+        });
+    }
+
+    const ctxRfid = document.getElementById('rfidActivityChart');
+    if (ctxRfid) {
+        window.rfidActivityInst = new Chart(ctxRfid, {
+            type: 'line',
+            data: {
+                labels: {{ rfid_activity_data.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Total Scans',
+                        data: {{ rfid_activity_data.total|safe }},
+                        borderColor: '#6366F1',
+                        backgroundColor: 'rgba(99,102,241,0.08)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Successful',
+                        data: {{ rfid_activity_data.successful|safe }},
+                        borderColor: '#10B981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        tension: 0.4,
+                        borderDash: []
+                    },
+                    {
+                        label: 'Failed',
+                        data: {{ rfid_activity_data.failed|safe }},
+                        borderColor: '#EF4444',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        tension: 0.4,
+                        borderDash: [4, 4]
+                    }
+                ]
+            },
+            options: { ...baseOpts, scales: baseScales }
+        });
+    }
+
+    const ctxTopRegular = document.getElementById('topRegularChart');
+    if (ctxTopRegular) {
+        window.topRegularInst = new Chart(ctxTopRegular, {
+            type: 'bar',
+            data: {
+                labels: {{ top_regular_data.labels|safe }},
+                datasets: [{
+                    label: 'Attendance %',
+                    data: {{ top_regular_data.data|safe }},
+                    backgroundColor: 'rgba(16,185,129,0.8)',
+                    borderColor: '#10B981',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                ...baseOpts,
+                indexAxis: 'y',
+                scales: {
+                    x: { ...baseScales.x, min: 0, max: 100, ticks: { ...baseScales.x.ticks, callback: function(v) { return v + '%'; } } },
+                    y: { ...baseScales.y, ticks: { ...baseScales.y.ticks, font: { size: 11 } } }
                 }
             }
         });
+    }
+
+    const ctxDefaulters = document.getElementById('topDefaultersChart');
+    if (ctxDefaulters) {
+        window.topDefaultersInst = new Chart(ctxDefaulters, {
+            type: 'bar',
+            data: {
+                labels: {{ top_defaulters_data.labels|safe }},
+                datasets: [{
+                    label: 'Attendance %',
+                    data: {{ top_defaulters_data.data|safe }},
+                    backgroundColor: 'rgba(239,68,68,0.8)',
+                    borderColor: '#EF4444',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                ...baseOpts,
+                indexAxis: 'y',
+                scales: {
+                    x: { ...baseScales.x, min: 0, max: 100, ticks: { ...baseScales.x.ticks, callback: function(v) { return v + '%'; } } },
+                    y: { ...baseScales.y, ticks: { ...baseScales.y.ticks, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    const ctxMonthly = document.getElementById('monthlyComparisonChart');
+    if (ctxMonthly) {
+        window.monthlyComparisonInst = new Chart(ctxMonthly, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_comparison_data.labels|safe }},
+                datasets: [
+                    {
+                        label: 'Present',
+                        data: {{ monthly_comparison_data.present|safe }},
+                        backgroundColor: 'rgba(16,185,129,0.8)',
+                        borderColor: '#10B981',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Late',
+                        data: {{ monthly_comparison_data.late|safe }},
+                        backgroundColor: 'rgba(245,158,11,0.8)',
+                        borderColor: '#F59E0B',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Absent',
+                        data: {{ monthly_comparison_data.absent|safe }},
+                        backgroundColor: 'rgba(239,68,68,0.6)',
+                        borderColor: '#EF4444',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: { ...baseOpts, scales: baseScales }
+        });
+    }
+
+    const ctxSourceComp = document.getElementById('sourceComparisonChart');
+    if (ctxSourceComp) {
+        window.sourceComparisonInst = new Chart(ctxSourceComp, {
+            type: 'doughnut',
+            data: {
+                labels: {{ source_comparison_data.labels|safe }},
+                datasets: [{
+                    data: {{ source_comparison_data.data|safe }},
+                    backgroundColor: {{ source_comparison_data.colors|safe }},
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                ...baseOpts,
+                cutout: '65%',
+                plugins: { legend: { ...legendOpts, position: 'bottom' } }
+            }
+        });
+    }
+
+    // --- Heatmap Grid ---
+    const heatmapGrid = document.getElementById('heatmap-grid');
+    if (heatmapGrid) {
+        const cells = {{ heatmap_data.cells|safe }};
+        const levelColors = {
+            light: {
+                0: 'bg-slate-100 border border-slate-200',
+                1: 'bg-emerald-200',
+                2: 'bg-emerald-400',
+                3: 'bg-emerald-500',
+                4: 'bg-emerald-700'
+            },
+            dark: {
+                0: 'dark:bg-slate-700 dark:border-slate-600',
+                1: 'dark:bg-emerald-900',
+                2: 'dark:bg-emerald-700',
+                3: 'dark:bg-emerald-600',
+                4: 'dark:bg-emerald-400'
+            }
+        };
+
+        // Build 52 columns of 7 cells (week columns)
+        // Find the Sunday of the first week
+        const firstDate = new Date(cells[0].date + 'T00:00:00');
+        const startDow = firstDate.getDay(); // 0=Sun
+
+        // Pad the beginning so col 0 starts on Sunday
+        const padded = [];
+        for (let i = 0; i < startDow; i++) padded.push(null);
+        cells.forEach(function(c) { padded.push(c); });
+        // Pad end to complete last column
+        while (padded.length % 7 !== 0) padded.push(null);
+
+        const numCols = padded.length / 7;
+
+        for (let col = 0; col < numCols; col++) {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'flex flex-col gap-1';
+            for (let row = 0; row < 7; row++) {
+                const cell = padded[col * 7 + row];
+                const cellDiv = document.createElement('div');
+                cellDiv.style.width = '12px';
+                cellDiv.style.height = '12px';
+                cellDiv.style.borderRadius = '2px';
+                cellDiv.style.flexShrink = '0';
+
+                if (!cell) {
+                    cellDiv.style.opacity = '0';
+                } else {
+                    const lvl = cell.level;
+                    const colorMap = ['#e2e8f0','#bbf7d0','#4ade80','#22c55e','#15803d'];
+                    cellDiv.style.backgroundColor = isDark
+                        ? ['#334155','#064e3b','#065f46','#047857','#10b981'][lvl]
+                        : colorMap[lvl];
+                    cellDiv.title = cell.count > 0
+                        ? cell.label + ': ' + cell.count + ' record' + (cell.count !== 1 ? 's' : '')
+                        : cell.label + ': No records';
+                    cellDiv.style.cursor = 'default';
+                }
+                colDiv.appendChild(cellDiv);
+            }
+            heatmapGrid.appendChild(colDiv);
+        }
     }
 
     if (typeof lucide !== 'undefined') { lucide.createIcons(); }

@@ -4,10 +4,9 @@
 
 {% block content %}
 
-{# ── Page Header ─────────────────────────────────────────────────────── #}
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
     {% include "partials/components/page_header.html" with header_title="Student Management" header_subtitle="Manage registered students and their RFID identification UIDs" header_icon="users" %}
-    
+
     {% if is_admin %}
     <div>
         <a href="{% url 'students:student_create' %}" class="btn-primary">
@@ -17,13 +16,10 @@
     {% endif %}
 </div>
 
-{# ── Filter Toolbar Card ─────────────────────────────────────────────── #}
 <div class="card p-6">
-    
-    {# ── Search & Filter Controls ── #}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        
-        {# Search Input #}
+
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+
         <div class="sm:col-span-2 relative w-full">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
@@ -36,7 +32,7 @@
                    hx-get="{% url 'students:student_list' %}"
                    hx-trigger="keyup changed delay:300ms, search"
                    hx-target="#student-table-container"
-                   hx-include="[name='classroom']"
+                   hx-include="[name='classroom'],[name='status']"
                    hx-indicator="#search-indicator">
             <span id="search-indicator" class="htmx-indicator absolute inset-y-0 right-0 pr-3 flex items-center">
                 <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -46,14 +42,27 @@
             </span>
         </div>
 
-        {# Classroom Filter Dropdown #}
+        <div>
+            <select name="status"
+                    class="input-field cursor-pointer"
+                    hx-get="{% url 'students:student_list' %}"
+                    hx-trigger="change"
+                    hx-target="#student-table-container"
+                    hx-include="[name='q'],[name='classroom']"
+                    hx-indicator="#search-indicator">
+                <option value="active" {% if selected_status == "active" %}selected{% endif %}>Active Only</option>
+                <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Inactive Only</option>
+                <option value="all" {% if selected_status == "all" %}selected{% endif %}>All Students</option>
+            </select>
+        </div>
+
         <div>
             <select name="classroom"
                     class="input-field cursor-pointer"
                     hx-get="{% url 'students:student_list' %}"
                     hx-trigger="change"
                     hx-target="#student-table-container"
-                    hx-include="[name='q']"
+                    hx-include="[name='q'],[name='status']"
                     hx-indicator="#search-indicator">
                 <option value="">All Classrooms</option>
                 {% for classroom in classrooms %}
@@ -63,10 +72,9 @@
                 {% endfor %}
             </select>
         </div>
-        
+
     </div>
 
-    {# ── Table Container ── #}
     <div id="student-table-container" class="overflow-x-auto">
         {% include "students/partials/student_table.html" %}
     </div>

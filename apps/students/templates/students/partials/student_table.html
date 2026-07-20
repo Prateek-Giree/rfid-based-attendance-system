@@ -72,7 +72,7 @@
 <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 px-4 py-4 sm:px-6 mt-4">
     <div class="flex flex-1 justify-between sm:hidden">
         {% if page_obj.has_previous %}
-        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}&status={{ selected_status|default:'active' }}"
                 hx-target="#student-table-container"
                 hx-indicator="#search-indicator"
                 class="relative inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
@@ -85,7 +85,7 @@
         {% endif %}
         
         {% if page_obj.has_next %}
-        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+        <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}&status={{ selected_status|default:'active' }}"
                 hx-target="#student-table-container"
                 hx-indicator="#search-indicator"
                 class="relative ml-3 inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
@@ -115,7 +115,7 @@
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 {# Previous Button #}
                 {% if page_obj.has_previous %}
-                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}&status={{ selected_status|default:'active' }}"
                         hx-target="#student-table-container"
                         hx-indicator="#search-indicator"
                         class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
@@ -135,7 +135,7 @@
                         {{ page_num }}
                     </span>
                     {% elif page_num > page_obj.number|add:"-3" and page_num < page_obj.number|add:"3" %}
-                    <button hx-get="{% url 'students:student_list' %}?page={{ page_num }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                    <button hx-get="{% url 'students:student_list' %}?page={{ page_num }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}&status={{ selected_status|default:'active' }}"
                             hx-target="#student-table-container"
                             hx-indicator="#search-indicator"
                             class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-200 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">
@@ -146,7 +146,7 @@
 
                 {# Next Button #}
                 {% if page_obj.has_next %}
-                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}"
+                <button hx-get="{% url 'students:student_list' %}?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&classroom={{ selected_classroom|default:'' }}&status={{ selected_status|default:'active' }}"
                         hx-target="#student-table-container"
                         hx-indicator="#search-indicator"
                         class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 focus:z-20 focus:outline-offset-0">

@@ -164,6 +164,19 @@ class StudentService:
         return queryset
 
     @staticmethod
+    def filter_by_status(queryset, status_filter: str):
+        """
+        Filters queryset by active/inactive status.
+        status_filter: 'active' | 'inactive' | 'all'
+        Default behavior (empty or 'active') returns only active students.
+        """
+        if status_filter == "inactive":
+            return queryset.filter(is_active=False)
+        if status_filter == "all":
+            return queryset
+        return queryset.filter(is_active=True)
+
+    @staticmethod
     def get_student_stats(user) -> dict:
         """
         Gathers dashboard statistics:
@@ -175,27 +188,33 @@ class StudentService:
         if user.is_staff:
             from django.utils import timezone
             import datetime
-            
+
             today = timezone.localdate()
             start_of_month = today.replace(day=1)
-            
-            students_qs = Student.objects.all()
+
+            active_qs = Student.objects.filter(is_active=True)
             classrooms_qs = Classroom.objects.all()
-            students_added_this_month = Student.objects.filter(created_at__date__gte=start_of_month).count()
+            students_added_this_month = Student.objects.filter(
+                created_at__date__gte=start_of_month, is_active=True
+            ).count()
         elif hasattr(user, "teacher_profile"):
-            students_qs = Student.objects.filter(classroom__class_teacher=user.teacher_profile)
+            active_qs = Student.objects.filter(
+                classroom__class_teacher=user.teacher_profile, is_active=True
+            )
             classrooms_qs = Classroom.objects.filter(class_teacher=user.teacher_profile)
             students_added_this_month = 0
         else:
-            students_qs = Student.objects.none()
+            active_qs = Student.objects.none()
             classrooms_qs = Classroom.objects.none()
             students_added_this_month = 0
 
-        total_students = students_qs.count()
-        active_students = students_qs.filter(is_active=True).count()
+        total_students = active_qs.count()
+        active_students = total_students
 
         classrooms_data = classrooms_qs.annotate(
-            student_count=models.Count("students")
+            student_count=models.Count(
+                "students", filter=models.Q(students__is_active=True)
+            )
         ).values("id", "name", "section", "student_count")
 
         students_per_classroom = [

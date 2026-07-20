@@ -213,12 +213,13 @@ class StudentListView(TeacherRequiredMixin, ListView):
         else:
             queryset = Student.objects.none()
 
-        # Prevent N+1 queries by pre-fetching related classroom objects
         queryset = queryset.select_related("classroom")
 
         q = self.request.GET.get("q", "").strip()
         classroom_id = self.request.GET.get("classroom", "")
+        status_filter = self.request.GET.get("status", "active")
 
+        queryset = StudentService.filter_by_status(queryset, status_filter)
         queryset = StudentService.search_students(queryset, q)
         queryset = StudentService.filter_students(queryset, classroom_id)
         return queryset
@@ -226,8 +227,7 @@ class StudentListView(TeacherRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        
-        # Populate classroom filter options based on user role
+
         if user.is_staff:
             context["classrooms"] = Classroom.objects.all()
         elif hasattr(user, "teacher_profile"):
@@ -242,6 +242,7 @@ class StudentListView(TeacherRequiredMixin, ListView):
         ]
         context["q"] = self.request.GET.get("q", "").strip()
         context["selected_classroom"] = self.request.GET.get("classroom", "")
+        context["selected_status"] = self.request.GET.get("status", "active")
         return context
 
 
